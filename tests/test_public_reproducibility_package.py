@@ -67,6 +67,10 @@ def test_sympy_duality_and_zero_parameter_invariants() -> None:
     assert thm["chdf_15_channel_uv_trace_zero_exact"] is True
     assert thm["coca_yukawa_cancels_1_over_r2_force_exact"] is True
     assert thm["hayward_hawking_temp_identity_exact"] is True
+    assert thm["su2_holonomy_hamiltonian_bounce_exact"] is True
+    assert thm["naive_point_yukawa_ricci_singular_verified"] is True
+    assert thm["pg_smooth_3vector_ricci_regular_12_over_ellstar2_exact"] is True
+    assert thm["plaquette_gap_exceeds_20x_PSSTW_exact"] is True
     assert math.isclose(thm["z_acc_equals_z_dip"], 0.6315564992697738, rel_tol=1e-9)
     assert math.isclose(thm["pg_seed_lightcone_tilt_g0r"], -math.sqrt(5.0) / 8.0, rel_tol=1e-12)
 

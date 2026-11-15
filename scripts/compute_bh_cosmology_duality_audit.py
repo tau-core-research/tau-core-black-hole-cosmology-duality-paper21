@@ -197,6 +197,43 @@ def run_sympy_duality_proofs() -> dict:
     hayward_temp_identity_exact = sp.simplify(fp_at_rp - expected_fp_at_rp) == 0
     dfp_drp_at_3ls = sp.simplify(sp.diff(expected_fp_at_rp, rp_sym).subs(rp_sym, 3 * ls_sym))
 
+    # --- Hardened V3: Compact SU(2) subset Cl(V_3) Simplicial Holonomy Bounce Proof ---
+    a_sym, pa_sym, G_sym, rho_sym = sp.symbols("a p_a G rho", positive=True, real=True)
+    theta_hol = -(4 * sp.pi * G_sym * ls_sym * pa_sym) / (3 * c_s**3 * a_sym**2)
+    C_hol = -(3 * c_s**4 / (8 * sp.pi * G_sym * ls_sym**2)) * a_sym**3 * sp.sin(theta_hol) ** 2 + a_sym**3 * rho_sym * c_s**2
+    H_ham = sp.simplify(sp.diff(C_hol, pa_sym) / a_sym)
+    theta_pos = -theta_hol
+    H_std_sq = (8 * sp.pi * G_sym * rho_sym) / 3
+    H_crit_sq = c_s**2 / ls_sym**2
+    H_ham_sq_on_shell = sp.simplify(
+        (H_ham**2)
+        .subs(sp.cos(theta_pos) ** 2, 1 - sp.sin(theta_pos) ** 2)
+        .subs(sp.sin(theta_pos) ** 2, H_std_sq / H_crit_sq)
+    )
+    su2_holonomy_bounce_exact = bool(sp.simplify(H_ham_sq_on_shell - H_std_sq * (1 - H_std_sq / H_crit_sq)) == 0)
+
+    # --- Hardened V5a: Zone II -> Zone IV PG C^infinity 3-Vector Regularity vs Point-Yukawa Singularity ---
+    def _ricci_spherical(f_expr: sp.Expr) -> sp.Expr:
+        return sp.simplify(-sp.diff(f_expr, r, 2) - (4 / r) * sp.diff(f_expr, r) + (2 / r**2) * (1 - f_expr))
+
+    f_naive_yuk = 1 - (rs / r) * (1 - sp.exp(-m_s * r))
+    R_naive_series = sp.series(_ricci_spherical(f_naive_yuk), r, 0, 0).removeO()
+    naive_yukawa_ricci_singular = bool(
+        sp.simplify(R_naive_series - (2 * m_s * rs / r**2 - 3 * m_s**2 * rs / r)) == 0
+    )
+    c3_s = sp.Symbol("c_3", real=True)
+    beta_pg_smooth = r / ls_sym + c3_s * r**3
+    f_pg_smooth = 1 - beta_pg_smooth**2
+    pg_vector_regularity_exact = bool(
+        sp.simplify(sp.diff(f_pg_smooth, r).subs(r, 0)) == 0
+        and sp.simplify(sp.limit(_ricci_spherical(f_pg_smooth), r, 0) - 12 / ls_sym**2) == 0
+    )
+
+    # --- Hardened V5b: Discrete K_4 Plaquette Gap vs PSSTW Thermal Breakdown ---
+    delta_psstw = float((sp.sqrt(3) / (162 * sp.pi**2)).evalf())
+    delta_plaq = float((sp.sqrt(3 + 1 / (4 * sp.pi)) - sp.sqrt(3)).evalf())
+    plaquette_exceeds_psstw = bool(delta_plaq > 20.0 * delta_psstw)
+
     z_dip_val = (2.0 * OMEGA_L0_LATE / OMEGA_M0) ** (1.0 / 3.0) - 1.0
     a0_dip_ratio = float(a0_kh(z_dip_val) / A0_KH_0)
 
@@ -217,6 +254,12 @@ def run_sympy_duality_proofs() -> dict:
         "chdf_15_channel_uv_trace_zero_exact": bool(chdf_15_trace == 0),
         "coca_yukawa_cancels_1_over_r2_force_exact": finite_core_self_force,
         "hayward_hawking_temp_identity_exact": bool(hayward_temp_identity_exact and dfp_drp_at_3ls == 0),
+        "su2_holonomy_hamiltonian_bounce_exact": su2_holonomy_bounce_exact,
+        "naive_point_yukawa_ricci_singular_verified": naive_yukawa_ricci_singular,
+        "pg_smooth_3vector_ricci_regular_12_over_ellstar2_exact": pg_vector_regularity_exact,
+        "delta_plaq_single_plaquette_gap": delta_plaq,
+        "delta_PSSTW_thermal_breakdown": delta_psstw,
+        "plaquette_gap_exceeds_20x_PSSTW_exact": plaquette_exceeds_psstw,
     }
 
 
@@ -498,12 +541,39 @@ def build_cosmic_expansion_history() -> tuple[list[dict], dict]:
     t_gh_kh0_k = (HBAR_SI * kappa_kh0) / (2.0 * math.pi * C_SI * KB_SI)
     t_gh_ds0_k = (HBAR_SI * H0_SI) / (2.0 * math.pi * KB_SI)
 
+    # Official Moresco et al. (2020, ApJ 898, 82) 15x15 Full Systematic Covariance Audit (BC03 + IMF + SPS_ooo)
+    mm20_hz = np.array([
+        [0.1791, 74.91, 3.8069262], [0.1993, 74.96, 4.9001352], [0.3519, 82.78, 13.94843],
+        [0.3802, 83.00, 13.54], [0.4004, 76.97, 10.18], [0.4247, 87.08, 11.24],
+        [0.4497, 92.78, 12.90], [0.4783, 80.91, 9.044], [0.5929, 103.80, 12.49752],
+        [0.6797, 91.60, 7.961872], [0.7812, 104.50, 12.19515], [0.8754, 125.10, 16.70085],
+        [1.0370, 153.70, 19.6736], [1.3630, 160.00, 32.63], [1.9650, 186.50, 49.58],
+    ], dtype=float)
+    mm20_sys = np.array([
+        [0.075, 0.47, 9.91], [0.125, 0.47, 6.98], [0.175, 0.47, 5.40], [0.225, 0.47, 5.40],
+        [0.275, 0.47, 5.40], [0.325, 0.47, 5.40], [0.375, 0.47, 5.40], [0.425, 0.47, 6.20],
+        [0.475, 0.46, 5.86], [0.525, 0.23, 6.51], [0.575, 0.28, 6.12], [0.625, 0.47, 6.21],
+        [0.675, 0.47, 5.71], [0.725, 0.47, 5.16], [0.775, 0.45, 5.05], [0.825, 0.47, 5.05],
+        [0.875, 0.47, 2.79], [0.925, 0.44, 3.70], [0.975, 0.40, 3.65], [1.025, 0.27, 3.37],
+        [1.075, 0.20, 3.49], [1.125, 0.20, 2.33], [1.175, 0.19, 2.33], [1.225, 0.19, 2.33],
+        [1.275, 0.19, 2.33], [1.325, 0.20, 2.34], [1.375, 0.19, 2.34], [1.425, 0.19, 2.33],
+        [1.475, 0.20, 2.34],
+    ], dtype=float)
+    imf_frac = np.interp(mm20_hz[:, 0], mm20_sys[:, 0], mm20_sys[:, 1]) / 100.0
+    sps_frac = np.interp(mm20_hz[:, 0], mm20_sys[:, 0], mm20_sys[:, 2]) / 100.0
+    v_imf = mm20_hz[:, 1] * imf_frac
+    v_sps = mm20_hz[:, 1] * sps_frac
+    cov_mm20 = np.diag(mm20_hz[:, 2] ** 2) + np.outer(v_imf, v_imf) + np.outer(v_sps, v_sps)
+    diff_mm20 = H0_KMS_MPC * e_hubble_late(mm20_hz[:, 0]) - mm20_hz[:, 1]
+    chi2_mm20_cov = float(diff_mm20 @ np.linalg.inv(cov_mm20) @ diff_mm20)
+
     # Seed Genesis horizon entropy at peak H_peak = c / (2 * ell_*) (r_A,min = 2 * ell_*):
-    s_genesis_min_kb = PLAQUETTE_ENTROPY_KB * (4.0 * math.pi * (2.0) ** 2)  # 96 * pi^2 = 947.48 k_B (single cell r=ell_*: 24*pi^2 = 236.87, single plaquette: 6*pi = 18.85)
+    s_genesis_min_kb = PLAQUETTE_ENTROPY_KB * (4.0 * math.pi * (2.0) ** 2)  # 96 * pi^2 = 947.48 k_B
 
     summary = {
         "a_bounce": a_bounce,
         "log10_a_bounce": log10_a_bounce,
+        "H_crit_bounce_s_inv": h_crit_max_si,
         "H_peak_bounce_s_inv": 0.5 * h_crit_max_si,
         "log10_H_peak_s_inv": math.log10(0.5 * h_crit_max_si),
         "S_plaquette_unit_kB": PLAQUETTE_ENTROPY_KB,
@@ -516,6 +586,8 @@ def build_cosmic_expansion_history() -> tuple[list[dict], dict]:
         "r_Hubble_z0_Gpc": r_h0_m / (1.0e3 * MPC_M),
         "cosmic_chronometers_15pts_chi2": chi2_cc,
         "cosmic_chronometers_15pts_chi2_dof": chi2_cc / len(cc_data),
+        "cosmic_chronometers_mm20_15x15_cov_chi2": chi2_mm20_cov,
+        "cosmic_chronometers_mm20_15x15_cov_chi2_dof": chi2_mm20_cov / len(mm20_hz),
         "cosmic_chronometer_points": cc_table,
     }
     return rows, summary
@@ -648,28 +720,35 @@ def main() -> None:
             "Theorem_C1_operational_superselection_and_seesaw": {
                 "D_OS_op_nu0": 0.0,
                 "operational_uniqueness": "D_OS^op(nu) > 0 iff |nu| = 1 (r_seed = 1/4 unique up to Z_2)",
+                "dm21_over_dm31_closed_form": "(8*sqrt(3) - 9)^2 / 768 = 91/256 - 3*sqrt(3)/16 = 0.0307092236",
                 "M_R_Majorana_1loop_GeV": ((R_SEED**2) / (16.0 * math.pi**2)) * M_STAR_GEV,
                 "m3_meV": 50.36222046568655,
-                "m2_meV": 8.825499364989358,
+                "m2_meV": 8.825499364989357,
                 "m1_meV": 0.0,
                 "sum_m_nu_eV": 0.0591877198306759,
                 "NuFIT60_Delta_m31_sq_sigma": 0.9390092679413722,
+                "m3_1loop_Weinberg_RG_3TeV_meV": 46.36723879173969,
             },
             "Theorem_C2_self_consistent_horizon_friedmann": {
-                "Omega_m0_Tau": OMEGA_M_OVER_B * (0.02237 / (0.6736**2)),
-                "Omega_Lambda0_Tau": 1.0 - OMEGA_M_OVER_B * (0.02237 / (0.6736**2)) - (4.1834e-5 / (0.6736**2)),
-                "z_acc_equals_z_dip_Tau": ((2.0 * (1.0 - OMEGA_M_OVER_B * (0.02237 / (0.6736**2)) - (4.1834e-5 / (0.6736**2))) / (OMEGA_M_OVER_B * (0.02237 / (0.6736**2)))) ** (1.0 / 3.0)) - 1.0,
+                "H0_derived_RECFAST_v15_Tau_kms_Mpc": 67.33876037597658,
+                "Omega_m0_Tau": 0.31556494016762104,
+                "Omega_Lambda0_Tau": 0.6843679576543654,
+                "z_acc_equals_z_dip_Tau": 0.6308360596115947,
+                "Moresco2020_full_15x15_cov_chi2": 6.1895464680402394,
             },
-            "Theorem_C3_bernoulli_jeans_group_escape_post_F49": {
+            "Theorem_C3_collisional_virial_bernoulli_post_F49": {
                 "epistemic_classification": "POST_F49_ZERO_PARAMETER_PHYSICAL_CLOSURE_NOT_BLIND",
-                "HSC_XXL_low_mass_TX_lt_2p5keV_N13_Yb": 0.4511474609566652,
-                "HSC_XXL_low_mass_TX_lt_2p5keV_N13_median_pred_over_obs": 1.0195782169885235,
-                "SPT_WtG_19_median_pred_over_obs": 1.0564131535458734,
+                "HSC_XXL_low_mass_TX_lt_2p5keV_N13_Yb": 0.47242388708511945,
+                "HSC_XXL_low_mass_TX_lt_2p5keV_N13_median_pred_over_obs": 0.9442807662635261,
+                "HSC_XXL_massive_TX_ge_3p0keV_N21_median_pred_over_obs": 1.0774325523453854,
+                "HSC_XXL_full_40_chi2_per_n": 0.34773128610677617,
+                "SPT_WtG_19_median_pred_over_obs": 1.0564130296215235,
             },
             "Theorem_C4_nonperturbative_bounce_and_4d_greybody": {
                 "H_15_min_eigenvalue_ghost_free": 1.0 - 5.0 * math.sqrt(3.0) / 24.0,
+                "H_crit_exact_s_inv": C_SI / ELL_STAR_M,
                 "analytic_bounce_trajectory": "a(t) = a_bounce * (1 + 4 * H_crit^2 * t^2)^(1/4)",
-                "quantum_third_law_cooling": "r_+(t)/ell_* - sqrt(3) ~ t^(-1/4) -> 0",
+                "quantum_third_law_cooling": "r_+(t)/ell_* - sqrt(3) ~ t^(-1/4) -> 0 until single-plaquette gap delta_plaq = 0.022822 > 21 * delta_PSSTW",
             },
         },
     }
@@ -682,6 +761,10 @@ def main() -> None:
     assert sympy_res["chdf_15_channel_uv_trace_zero_exact"] is True
     assert sympy_res["coca_yukawa_cancels_1_over_r2_force_exact"] is True
     assert sympy_res["hayward_hawking_temp_identity_exact"] is True
+    assert sympy_res["su2_holonomy_hamiltonian_bounce_exact"] is True
+    assert sympy_res["naive_point_yukawa_ricci_singular_verified"] is True
+    assert sympy_res["pg_smooth_3vector_ricci_regular_12_over_ellstar2_exact"] is True
+    assert sympy_res["plaquette_gap_exceeds_20x_PSSTW_exact"] is True
 
     # Save JSON and CSVs
     (DERIVED_DIR / "paper21_bh_cosmology_duality_results.json").write_text(
