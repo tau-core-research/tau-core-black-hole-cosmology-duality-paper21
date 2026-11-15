@@ -1,5 +1,5 @@
 {
-  "paper": "Paper 21 \u2014 Black Holes, the Big Bang, and Present Cosmic Expansion in Tau Core (v20, k = 0)",
+  "paper": "Paper 21 — Black Holes, the Big Bang, and Present Cosmic Expansion in Tau Core (v20, k = 0)",
   "date": "2026-11-14",
   "free_parameters_k": 0,
   "NATURE_LEVEL_CLOSURE": false,
@@ -474,6 +474,180 @@
       "H_crit_exact_s_inv": 2.136142682955086e+42,
       "analytic_bounce_trajectory": "a(t) = a_bounce * (1 + 4 * H_crit^2 * t^2)^(1/4)",
       "quantum_third_law_cooling": "r_+(t)/ell_* - sqrt(3) ~ t^(-1/4) -> 0 until single-plaquette gap delta_plaq = 0.022822 > 21 * delta_PSSTW"
+    }
+  },
+  "p7_cartan_inflection_coincidence_and_blind_protocol": {
+    "gate_id": "P7_GATE3_CARTAN_KODAMA_INFLECTION_COINCIDENCE",
+    "free_parameters_k": 0,
+    "NATURE_LEVEL_CLOSURE": false,
+    "sympy_bijection_proof": {
+      "bijection_formula_x_dip": "(2*alpha_q - 1) / (1 - alpha_q)",
+      "sympy_bijection_verified": true,
+      "alpha_q_Cartan_exact": 0.75,
+      "x_dip_at_alpha_q_3_over_4": 2.0,
+      "d2f_dx2_at_dip_positive": true
+    },
+    "tau_core_zero_parameter_predictions": {
+      "H0_Tau_kms_mpc": 67.3388,
+      "Omega_m0_Tau": 0.315565,
+      "Omega_Lambda0_Tau": 0.684435,
+      "z_acc_Tau_exact": 0.6308892083508162,
+      "z_dip_Tau_exact": 0.6308892083508162,
+      "z_acc_minus_z_dip_exact": 0.0,
+      "z_dip_Planck_PR3_ref": 0.6315564992697738,
+      "a0_KH_z0_m_s2": 9.010214342260604e-11,
+      "a0_KH_zdip_m_s2": 8.457103810420015e-11,
+      "dip_ratio_a0_zdip_over_a0_0": 0.9386129440621257,
+      "crossover_redshift_a0_KH_equals_a0_0": 1.2546
+    },
+    "cosmological_z_acc_measurements": {
+      "moresco_15_full_15x15_cov": {
+        "n_bins": 15,
+        "Omega_m0_best": 0.3376,
+        "z_acc_obs": 0.5773060186598467,
+        "z_acc_1sigma_interval": [
+          0.3538146542768221,
+          0.8100481368292447
+        ],
+        "tension_vs_Tau_sigma": 0.23489371885287996,
+        "chi2_Tau_k0": 6.19108180833042,
+        "chi2_per_N_Tau_k0": 0.412738787222028
+      },
+      "cosmic_chronometers_32_full": {
+        "n_bins": 32,
+        "Omega_m0_best": 0.3197,
+        "z_acc_obs": 0.6205506527853866,
+        "z_acc_1sigma_interval": [
+          0.4765549711708654,
+          0.7680884609137477
+        ],
+        "tension_vs_Tau_sigma": 0.07092533742554037,
+        "min_chi2": 14.73240055489793
+      },
+      "desi_dr1_gaussian_bao_13x13_cov": {
+        "n_bins": 13,
+        "Omega_m0_best": 0.2975,
+        "z_acc_obs": 0.6777598017872468,
+        "z_acc_1sigma_interval": [
+          0.654828664173505,
+          0.7008548439932782
+        ],
+        "chi2_min": 10.270987274753123,
+        "chi2_Tau_k0": 14.415184748908313,
+        "chi2_per_dof_Tau": 1.2012653957423594
+      }
+    },
+    "galactic_z_dip_and_trajectory_tests": {
+      "mancera_pina_2025_43_jwst_hst_disks_z089": {
+        "n_galaxies": 43,
+        "z_range": [
+          0.787,
+          1.03
+        ],
+        "z_median": 0.885,
+        "chi2_Tau_KH_COCA_k0": 106.39150252264808,
+        "chi2_Tau_KH_OCSR_k0": 149.5122996908785,
+        "chi2_Static_MOND_RAR_k0": 194.083,
+        "chi2_LCDM_Moster13_SHMR_k0": 227.747,
+        "chi2_Monotonic_Hubble_Kin_OCSR_k0": 284.76453179149564,
+        "chi2_Monotonic_Hubble_Kin_COCA_k0": 227.04455791265417,
+        "delta_chi2_KH_minus_Monotonic_Kin_OCSR": -135.25223210061714,
+        "delta_chi2_KH_minus_Monotonic_Kin_COCA": -120.65305539000609,
+        "delta_chi2_KH_COCA_minus_Static_MOND": -87.69149747735192,
+        "delta_chi2_KH_COCA_minus_LCDM_SHMR": -121.35549747735193
+      },
+      "combined_51_jwst_hst_alma_resolved_disks_z079_to_731": {
+        "n_galaxies": 58,
+        "chi2_Tau_KH_COCA_k0": 126.21692560901212,
+        "chi2_Monotonic_Hubble_Kin_COCA_k0": 249.2628724169479,
+        "delta_chi2_KH_minus_Monotonic_Kin": -123.04594680793579,
+        "equiv_gaussian_sigma_rejection_of_monotonic_Hz": 11.092607755074358
+      }
+    },
+    "euclid_dr1_live_tomographic_lensing_and_kinematics": {
+      "n_spectroscopic_galaxies": 359,
+      "n_spectroscopic_in_trough_045_080": 46,
+      "min_a0_ratio_in_euclid_sample": 0.9386176587521621,
+      "z_at_min_a0_in_euclid_sample": 0.62572,
+      "tomographic_weak_lensing_bins": [
+        {
+          "bin_id": "Bin1_Late_z015_045",
+          "z_range": "[0.15, 0.45)",
+          "n_live_euclid_dr1_lenses": 72,
+          "z_lens_median": 0.33,
+          "a0_KH_over_a0_0": 0.9542,
+          "a0_Kin_over_a0_0": 1.19451,
+          "median_log10_Mbar_Msun": 10.671,
+          "median_Re_kpc": 5.054,
+          "DeltaSigma_bar_100kpc_Msun_pc2": 1.3995,
+          "DeltaSigma_Tau_KH_100kpc_Msun_pc2": 9.7426,
+          "DeltaSigma_Monotonic_Kin_100kpc_Msun_pc2": 11.0985,
+          "DeltaSigma_bar_200kpc_Msun_pc2": 0.3613,
+          "DeltaSigma_Tau_KH_200kpc_Msun_pc2": 3.5324,
+          "DeltaSigma_Monotonic_Kin_200kpc_Msun_pc2": 3.9471,
+          "fractional_split_Kin_vs_KH_at_200kpc_pct": 11.74
+        },
+        {
+          "bin_id": "Bin2_DipTrough_z045_078",
+          "z_range": "[0.45, 0.78)",
+          "n_live_euclid_dr1_lenses": 339,
+          "z_lens_median": 0.666,
+          "a0_KH_over_a0_0": 0.93883,
+          "a0_Kin_over_a0_0": 1.46411,
+          "median_log10_Mbar_Msun": 10.742,
+          "median_Re_kpc": 5.201,
+          "DeltaSigma_bar_100kpc_Msun_pc2": 1.6447,
+          "DeltaSigma_Tau_KH_100kpc_Msun_pc2": 10.9035,
+          "DeltaSigma_Monotonic_Kin_100kpc_Msun_pc2": 13.1831,
+          "DeltaSigma_bar_200kpc_Msun_pc2": 0.425,
+          "DeltaSigma_Tau_KH_200kpc_Msun_pc2": 3.9856,
+          "DeltaSigma_Monotonic_Kin_200kpc_Msun_pc2": 4.6847,
+          "fractional_split_Kin_vs_KH_at_200kpc_pct": 17.54
+        },
+        {
+          "bin_id": "Bin3_PostDip_z078_115",
+          "z_range": "[0.78, 1.15)",
+          "n_live_euclid_dr1_lenses": 237,
+          "z_lens_median": 0.928,
+          "a0_KH_over_a0_0": 0.95394,
+          "a0_Kin_over_a0_0": 1.71639,
+          "median_log10_Mbar_Msun": 10.817,
+          "median_Re_kpc": 5.621,
+          "DeltaSigma_bar_100kpc_Msun_pc2": 1.9446,
+          "DeltaSigma_Tau_KH_100kpc_Msun_pc2": 12.3528,
+          "DeltaSigma_Monotonic_Kin_100kpc_Msun_pc2": 15.5508,
+          "DeltaSigma_bar_200kpc_Msun_pc2": 0.5038,
+          "DeltaSigma_Tau_KH_200kpc_Msun_pc2": 4.5544,
+          "DeltaSigma_Monotonic_Kin_200kpc_Msun_pc2": 5.5395,
+          "fractional_split_Kin_vs_KH_at_200kpc_pct": 21.63
+        },
+        {
+          "bin_id": "Bin4_CosmicNoon_z115_165",
+          "z_range": "[1.15, 1.65)",
+          "n_live_euclid_dr1_lenses": 131,
+          "z_lens_median": 1.386,
+          "a0_KH_over_a0_0": 1.03183,
+          "a0_Kin_over_a0_0": 2.22955,
+          "median_log10_Mbar_Msun": 10.776,
+          "median_Re_kpc": 4.92,
+          "DeltaSigma_bar_100kpc_Msun_pc2": 1.7831,
+          "DeltaSigma_Tau_KH_100kpc_Msun_pc2": 11.8669,
+          "DeltaSigma_Monotonic_Kin_100kpc_Msun_pc2": 15.5548,
+          "DeltaSigma_bar_200kpc_Msun_pc2": 0.4599,
+          "DeltaSigma_Tau_KH_200kpc_Msun_pc2": 4.3292,
+          "DeltaSigma_Monotonic_Kin_200kpc_Msun_pc2": 5.4537,
+          "fractional_split_Kin_vs_KH_at_200kpc_pct": 25.97
+        }
+      ]
+    },
+    "preregistered_blind_test_protocol": {
+      "forecast_csv": "data/derived/paper21_p7_euclid_dr2_alma_blind_forecasts.csv",
+      "forecast_csv_sha256": "5235532060abb9fcad33e61b002c61bb64ff0153852bc2c97665829986d50aee",
+      "decisive_falsification_criteria": {
+        "criterion_1_coincidence_window": "|z_dip^obs - z_acc^obs| <= 2.0 * sigma_tot around z = 0.631",
+        "criterion_2_trough_depth": "a0^obs(z in [0.45, 0.80]) / a0^obs(0) in [0.910, 0.968] (confirming -6.14% dip vs monotonic +28%)",
+        "criterion_3_log_likelihood_gate": "Delta chi^2(Tau_KH - Monotonic_Kin) <= -25.0 (5 sigma) on Euclid DR2/DR3 + ALMA/JWST holdout"
+      }
     }
   }
 }

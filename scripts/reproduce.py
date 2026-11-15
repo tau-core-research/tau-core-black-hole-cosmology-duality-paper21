@@ -57,6 +57,9 @@ def main() -> None:
     # 2. Generate all 7 EN + 7 HU figures (300 DPI)
     run_step([sys.executable, str(REPO_ROOT / "scripts" / "generate_paper21_figures.py")], cwd=REPO_ROOT, env=env)
 
+    # 2b. Run P7 Cartan inflection coincidence & blind-test evaluator (regenerates Fig 8 EN + HU and blind forecast CSV)
+    run_step([sys.executable, str(REPO_ROOT / "scripts" / "evaluate_p7_cartan_inflection_blind_test.py")], cwd=REPO_ROOT, env=env)
+
     # 3. Compile English submission manuscript
     compile_latex_folder(REPO_ROOT / "paper21_submission_source", env=env)
 

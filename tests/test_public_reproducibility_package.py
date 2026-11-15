@@ -18,6 +18,7 @@ FIGURE_NAMES = [
     "fig5_eht_ligo_and_strong_field_bh_validation.png",
     "fig6_cosmic_expansion_cmb_jwst_euclid_validation.png",
     "fig7_master_bh_vs_cosmos_synthesis_matrix.png",
+    "fig8_p7_cartan_inflection_coincidence_and_blind_test.png",
 ]
 
 
@@ -35,11 +36,14 @@ def test_canonical_files_and_kb_link_exist() -> None:
         REPO_ROOT / "requirements.txt",
         REPO_ROOT / "scripts" / "compute_bh_cosmology_duality_audit.py",
         REPO_ROOT / "scripts" / "generate_paper21_figures.py",
+        REPO_ROOT / "scripts" / "evaluate_p7_cartan_inflection_blind_test.py",
         REPO_ROOT / "scripts" / "build_arxiv_source.py",
         REPO_ROOT / "scripts" / "reproduce.py",
         REPO_ROOT / "data" / "raw" / "euclid_dr1_live_validation_results.json",
         REPO_ROOT / "data" / "raw" / "frontier_three_pillars_results.json",
         DERIVED_JSON,
+        REPO_ROOT / "data" / "derived" / "paper21_p7_cartan_inflection_blind_protocol.json",
+        REPO_ROOT / "data" / "derived" / "paper21_p7_euclid_dr2_alma_blind_forecasts.csv",
         REPO_ROOT / "data" / "derived" / "paper21_bh_radial_zones_profile.csv",
         REPO_ROOT / "data" / "derived" / "paper21_cosmic_expansion_history.csv",
         REPO_ROOT / "data" / "derived" / "paper21_observational_benchmarks.csv",
@@ -78,6 +82,13 @@ def test_sympy_duality_and_zero_parameter_invariants() -> None:
     assert rem["T_hawking_extremal_K"] == 0.0
     assert math.isclose(rem["n_plaquettes"], 12.0 * math.pi, rel_tol=1e-12)
     assert math.isclose(rem["S_remnant_over_kB"], 72.0 * math.pi**2, rel_tol=1e-12)
+
+    p7 = data["p7_cartan_inflection_coincidence_and_blind_protocol"]
+    assert p7["sympy_bijection_proof"]["sympy_bijection_verified"] is True
+    assert p7["sympy_bijection_proof"]["x_dip_at_alpha_q_3_over_4"] == 2.0
+    assert p7["cosmological_z_acc_measurements"]["cosmic_chronometers_32_full"]["tension_vs_Tau_sigma"] < 0.10
+    assert p7["galactic_z_dip_and_trajectory_tests"]["mancera_pina_2025_43_jwst_hst_disks_z089"]["delta_chi2_KH_minus_Monotonic_Kin_OCSR"] < -130.0
+    assert len(p7["euclid_dr1_live_tomographic_lensing_and_kinematics"]["tomographic_weak_lensing_bins"]) == 4
 
 
 def test_bilingual_figures_exist_and_are_localized() -> None:
