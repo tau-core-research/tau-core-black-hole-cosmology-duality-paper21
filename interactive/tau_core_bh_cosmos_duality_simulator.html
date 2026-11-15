@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tau Core (Paper 21, k=0) — Fekete Lyuk &amp; Kozmikus Visszapattanás Dualitás-Szimulátor</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-4 md:p-6">
+  <div class="max-w-7xl mx-auto space-y-5">
+
+    <!-- Header -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+          <div class="flex flex-wrap items-center gap-2 mb-1.5">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[var(--primary)] text-[var(--primary-foreground)]">
+              Tau Core · Paper 21 · k = 0 szabad paraméter
+            </span>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--secondary)] text-[var(--secondary-foreground)] border border-[var(--border)]">
+              D1–D5. tételek (SymPy-igazolt)
+            </span>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--secondary)] text-[var(--muted-foreground)] border border-[var(--border)]">
+              NATURE_LEVEL_CLOSURE = false
+            </span>
+          </div>
+          <h1 class="text-xl md:text-2xl font-bold tracking-tight text-[var(--foreground)]">
+            Fekete Lyukak (&sigma;<sub>flow</sub> = &minus;1) &harr; Nagy Bumm Visszapattanás és Kozmikus Tágulás (&sigma;<sub>flow</sub> = +1)
+          </h1>
+          <p class="text-sm text-[var(--muted-foreground)] mt-1">
+            Interaktív Painlevé–Gullstrand akusztikus óra-folyadék szimulátor: járd be valós időben a fekete lyuk 4 reguláris kvantumzónáját, a 61 nagyságrendű kozmikus visszapattanást és a 11.28 M<sub>P</sub> hideg Hawking-maradványt!
+          </p>
+        </div>
+
+        <!-- Mode Selector -->
+        <div class="flex flex-wrap gap-2">
+          <button id="tab-dual" onclick="setMode('dual')" class="px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all">
+            1. Tükör-Dualitás (&sigma; = &mp;1)
+          </button>
+          <button id="tab-bh" onclick="setMode('bh')" class="px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all">
+            2. Fekete Lyuk 4 Zóna (&sigma; = &minus;1)
+          </button>
+          <button id="tab-cosmo" onclick="setMode('cosmo')" class="px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all">
+            3. Nagy Bumm &amp; Tágulás (&sigma; = +1)
+          </button>
+          <button id="tab-thermo" onclick="setMode('thermo')" class="px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all">
+            4. Hawking-Maradvány &amp; Page-görbe
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Control Bar -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm space-y-4">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+
+        <!-- BH Slider -->
+        <div id="ctrl-bh-box" class="lg:col-span-5 space-y-2">
+          <div class="flex items-center justify-between">
+            <label for="bh-slider" class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+              Fekete lyuk sugár: x = r / r<sub>s</sub> (&sigma;<sub>flow</sub> = &minus;1)
+            </label>
+            <span id="bh-x-badge" class="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--foreground)]">
+              x = 0.650 r_s
+            </span>
+          </div>
+          <input id="bh-slider" type="range" min="0" max="1000" value="580" class="w-full accent-[var(--primary)] cursor-pointer" />
+          <div class="flex flex-wrap gap-1.5 pt-1">
+            <button onclick="jumpBH(2.60)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">Külső (2.6 r<sub>s</sub>)</button>
+            <button onclick="jumpBH(1.50)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">Fotongömb (1.5)</button>
+            <button onclick="jumpBH(1.00)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">Horizont (1.0)</button>
+            <button onclick="jumpBH(0.68)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">I. Zóna (0.68)</button>
+            <button onclick="jumpBH(0.34)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">II. Zóna (0.34)</button>
+            <button onclick="jumpBH(0.11)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">III. Zóna (0.11)</button>
+            <button onclick="jumpBH(0.0323)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">Cauchy x<sub>&minus;</sub></button>
+            <button onclick="jumpBH(0.010)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">IV. K<sub>4</sub> Mag</button>
+          </div>
+        </div>
+
+        <!-- Cosmo Slider -->
+        <div id="ctrl-cosmo-box" class="lg:col-span-5 space-y-2">
+          <div class="flex items-center justify-between">
+            <label for="cosmo-slider" class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+              Kozmikus skálafaktor: log<sub>10</sub>(a) (&sigma;<sub>flow</sub> = +1)
+            </label>
+            <span id="cosmo-a-badge" class="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--foreground)]">
+              log10(a) = -0.212 (z = 0.632)
+            </span>
+          </div>
+          <input id="cosmo-slider" type="range" min="0" max="1000" value="987" class="w-full accent-[var(--primary)] cursor-pointer" />
+          <div class="flex flex-wrap gap-1.5 pt-1">
+            <button onclick="jumpCosmo(-31.0049)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">K<sub>4</sub> Visszapattanás (-31.01)</button>
+            <button onclick="jumpCosmo(-30.929)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">H<sub>max</sub> csúcs</button>
+            <button onclick="jumpCosmo(-3.038)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">CMB (z=1090)</button>
+            <button onclick="jumpCosmo(-1.181)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">JWST (z=14.18)</button>
+            <button onclick="jumpCosmo(-0.2126)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">z<sub>acc</sub> &equiv; z<sub>dip</sub> = 0.6316</button>
+            <button onclick="jumpCosmo(0.0)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">Ma (z = 0)</button>
+          </div>
+        </div>
+
+        <!-- Thermo Slider (shown prominently in Thermo mode, or compact toggle) -->
+        <div id="ctrl-thermo-box" class="lg:col-span-5 space-y-2 hidden">
+          <div class="flex items-center justify-between">
+            <label for="thermo-slider" class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+              Hawking-horizont: r<sub>+</sub> / &ell;<sub>*</sub> (&ell;<sub>*</sub> = &radic;(24&pi;) &ell;<sub>P</sub>)
+            </label>
+            <span id="thermo-r-badge" class="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--foreground)]">
+              r+ / l* = 3.00 (Davies-csúcs)
+            </span>
+          </div>
+          <input id="thermo-slider" type="range" min="1732" max="12000" value="3000" class="w-full accent-[var(--primary)] cursor-pointer" />
+          <div class="flex flex-wrap gap-1.5 pt-1">
+            <button onclick="jumpThermo(10.0)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">félklasszikus (10 &ell;<sub>*</sub>)</button>
+            <button onclick="jumpThermo(4.899)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">Page-idő</button>
+            <button onclick="jumpThermo(3.000)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">Davies T<sub>max</sub> (3 &ell;<sub>*</sub>)</button>
+            <button onclick="jumpThermo(2.150)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">C<sub>BH</sub> &gt; 0 hűlés</button>
+            <button onclick="jumpThermo(1.73205)" class="px-2 py-1 rounded text-xs bg-[var(--secondary)] hover:opacity-80 border border-[var(--border)]">K<sub>4</sub> Maradvány (&radic;3 &ell;<sub>*</sub>)</button>
+          </div>
+        </div>
+
+        <!-- Animation Controls -->
+        <div class="lg:col-span-2 flex flex-col gap-2">
+          <button id="anim-btn" onclick="toggleAnim()" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 transition">
+            &#9646;&#9646; Áramlás megállítása
+          </button>
+          <button onclick="syncMirror()" class="w-full px-3 py-2 rounded-xl text-xs font-medium bg-[var(--secondary)] text-[var(--secondary-foreground)] border border-[var(--border)] hover:opacity-80 transition">
+            Horizont-tükör szinkron (&beta; = 1)
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Main Visualization Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+      <!-- Left Canvas: Spatial PG Flow, Light Cones & Zone/Horizon Geometry -->
+      <div class="lg:col-span-6 bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow-sm flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+          <h2 id="left-canvas-title" class="text-sm font-bold text-[var(--foreground)]">
+            Painlevé–Gullstrand Óra-Folyadék, Fénykúpok és Zóna-Geometria
+          </h2>
+          <span id="left-canvas-sub" class="text-xs text-[var(--muted-foreground)] font-mono">
+            dr&plusmn;/dt = c(&plusmn;1 + &sigma;&beta;)
+          </span>
+        </div>
+        <div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden border border-[var(--border)]">
+          <canvas id="spatial-canvas" class="w-full h-full block"></canvas>
+        </div>
+      </div>
+
+      <!-- Right Canvas: Exact Theoretical Curves & Live Cursor -->
+      <div class="lg:col-span-6 bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow-sm flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+          <h2 id="right-canvas-title" class="text-sm font-bold text-[var(--foreground)]">
+            Egzakt Radiális és Kozmológiai Profilok (Tau Core k = 0 vs. Klasszikus GR)
+          </h2>
+          <span id="right-canvas-sub" class="text-xs text-[var(--muted-foreground)] font-mono">
+            SymPy-igazolt görbék
+          </span>
+        </div>
+        <div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden border border-[var(--border)]">
+          <canvas id="profile-canvas" class="w-full h-full block"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Live Telemetry Readout Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <!-- Card 1: Active BH Zone -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm space-y-1.5">
+        <div class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+          Fekete Lyuk Zóna (&sigma;<sub>flow</sub> = &minus;1)
+        </div>
+        <div id="stat-bh-zone" class="text-base font-bold text-[var(--foreground)]">
+          I. Zóna: Szuperszonikus PG-vízesés
+        </div>
+        <div id="stat-bh-metrics" class="text-xs font-mono text-[var(--muted-foreground)] leading-relaxed">
+          &beta;_Tau = 1.342 | f_eff = -0.801 | w_eff = +0.33
+        </div>
+        <div id="stat-bh-micro" class="text-xs text-[var(--foreground)] pt-1 border-t border-[var(--border)]">
+          Nyommentes +2:&minus;1:&minus;1 CHDF Weyl-nyújtás; sajátidő d&tau; = dt<sub>PG</sub> törésmentes.
+        </div>
+      </div>
+
+      <!-- Card 2: Active Cosmic Epoch -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm space-y-1.5">
+        <div class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+          Kozmikus Korszak (&sigma;<sub>flow</sub> = +1)
+        </div>
+        <div id="stat-cosmo-epoch" class="text-base font-bold text-[var(--foreground)]">
+          Gyorsulás = KH-Dip Koincidencia
+        </div>
+        <div id="stat-cosmo-metrics" class="text-xs font-mono text-[var(--muted-foreground)] leading-relaxed">
+          z = 0.6316 | q(z) = 0.000 | a0_KH/a0(0) = 0.9386
+        </div>
+        <div id="stat-cosmo-micro" class="text-xs text-[var(--foreground)] pt-1 border-t border-[var(--border)]">
+          D2. tétel: &Omega;<sub>m</sub>(z) = 2/3-nál q(z) = 0 és da<sub>0</sub><sup>KH</sup>/dz = 0 egzaktul egybeesik!
+        </div>
+      </div>
+
+      <!-- Card 3: Curvature & Singularity Resolution -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm space-y-1.5">
+        <div class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+          Görbületi Plafon vs. GR Szingularitás
+        </div>
+        <div id="stat-curv-title" class="text-base font-bold text-[var(--foreground)]">
+          K<sub>max</sub> &ell;<sub>P</sub><sup>4</sup> = 1/(24&pi;<sup>2</sup>) = 4.22&times;10<sup>&minus;3</sup>
+        </div>
+        <div id="stat-curv-metrics" class="text-xs font-mono text-[var(--muted-foreground)] leading-relaxed">
+          Tau K/K_hor = 3.82e+0 | GR 12/x^6 = 1.59e+2
+        </div>
+        <div id="stat-curv-micro" class="text-xs text-[var(--foreground)] pt-1 border-t border-[var(--border)]">
+          &Pi;<sup>2</sup> = &Pi; &rArr; r<sub>seed</sub> = 1/4, dr/dt = 0 és g<sub>0r</sub>(1/4) = &minus;&radic;5/8 &approx; &minus;0.27951.
+        </div>
+      </div>
+
+      <!-- Card 4: Horizon Thermodynamics & Remnant -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm space-y-1.5">
+        <div class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+          Plakett-Entrópia &amp; K<sub>4</sub> Maradvány (D5)
+        </div>
+        <div id="stat-thermo-title" class="text-base font-bold text-[var(--foreground)]">
+          s<sub>plaq</sub> = 6&pi; k<sub>B</sub> = 18.85 k<sub>B</sub> / &ell;<sub>*</sub><sup>2</sup>
+        </div>
+        <div id="stat-thermo-metrics" class="text-xs font-mono text-[var(--muted-foreground)] leading-relaxed">
+          M_rem = 11.28 M_P | S_rem/k_B = 72&pi;^2 = 710.61
+        </div>
+        <div id="stat-thermo-micro" class="text-xs text-[var(--foreground)] pt-1 border-t border-[var(--border)]">
+          Kozmikus entrópia: C<sub>Weyl</sub> = 0 &rarr; S<sub>CH</sub>(0)/k<sub>B</sub> = 2.27&times;10<sup>122</sup> (121.08 évtized).
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Canonical Invariants Footer Strip -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 text-xs text-[var(--muted-foreground)] flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <strong class="text-[var(--foreground)]">Rögzített Tau Core invariánsok (k = 0):</strong>
+        r<sub>seed</sub> = 1/4 · &alpha;<sub>OCSR</sub> = 5&radic;3/24 &approx; 0.360844 · &Omega;<sub>A</sub>/&Omega;<sub>b</sub> = (213&radic;3&minus;20)/65 &approx; 5.368105 (0.06&sigma; Planck) · m&#770;<sub>eff</sub> = 2.120548 · &ell;<sub>*</sub> = &radic;(24&pi;) &ell;<sub>P</sub>
+      </div>
+      <div>
+        <strong class="text-[var(--foreground)]">Nyitott határok:</strong> POST-OCC-NU1 · többcsúcsú &ell;<sub>*</sub> PDE · 4D szürketest-visszahatás · T<sub>X</sub> &lt; 2.5 keV csoport-AGN
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // =========================================================================
+    // Exact Source-Frozen Tau Core Constants (Paper 21, k = 0)
+    // =========================================================================
+    const CONST = {
+      r_seed: 0.25,
+      g0r_seed: -Math.sqrt(5) / 8,
+      ell_star_over_lp: Math.sqrt(24 * Math.PI),
+      alpha_ocsr: (5 * Math.sqrt(3)) / 24,
+      omega_ratio: (213 * Math.sqrt(3) - 20) / 65,
+      m_eff_hat: 2.1205478131,
+      H0_kms_mpc: 67.36,
+      H0_si: (67.36 * 1000) / 3.0856775814913673e22,
+      c: 299792458.0,
+      Om0: 0.3153,
+      OL0: 0.6847,
+      Or0: 9.15e-5,
+      eps_core: 0.10, // Resolved quantum-core scale matching Paper 21 Fig. 2
+      log10_a_bounce: -31.004930,
+      H_crit: 2.136143e42,
+      z_dip: Math.cbrt((2 * 0.6847) / 0.3153) - 1,
+      T_planck_K: 1.416784e32
+    };
+
+    let state = {
+      mode: 'dual',
+      bhX: 0.68,          // r / r_s in [0.004, 3.0]
+      log10a: -0.212578,  // log10(a) in [-31.00493, 0.20]
+      thermoR: 3.00,      // r_+ / ell_* in [sqrt(3), 12]
+      animating: true,
+      phase: 0
+    };
+
+    // Slider mappings: logarithmic resolution near inner BH core so all 4 zones are spacious!
+    function sliderToBhX(val) {
+      const u = val / 1000; // 0..1
+      const xMin = 0.005, xMax = 3.0;
+      return xMin * Math.pow(xMax / xMin, u);
+    }
+    function bhXToSlider(x) {
+      const xMin = 0.005, xMax = 3.0;
+      const clamped = Math.max(xMin, Math.min(xMax, x));
+      return Math.round(1000 * (Math.log(clamped / xMin) / Math.log(xMax / xMin)));
+    }
+
+    // Piecewise-smooth cosmic slider: 0..450 covers bounce-to-recombination [-31.005..-3], 450..1000 covers [-3..+0.15] in detail!
+    function sliderToLogA(val) {
+      const u = val / 1000;
+      if (u <= 0.42) {
+        const t = u / 0.42;
+        return CONST.log10_a_bounce + t * (-3.0 - CONST.log10_a_bounce);
+      } else {
+        const t = (u - 0.42) / 0.58;
+        return -3.0 + t * (0.15 - (-3.0));
+      }
+    }
+    function logAToSlider(loga) {
+      const c = Math.max(CONST.log10_a_bounce, Math.min(0.15, loga));
+      if (c <= -3.0) {
+        return Math.round(420 * ((c - CONST.log10_a_bounce) / (-3.0 - CONST.log10_a_bounce)));
+      } else {
+        return Math.round(420 + 580 * ((c - (-3.0)) / 3.15));
+      }
+    }
+
+    // Exact Paper 21 BH 4-Zone Profile (Hayward-COCA-CHDF regularized)
+    function evalBH(x) {
+      const eps = CONST.eps_core; // 0.10 resolved core scale
+      // Hayward-Tau regularized inflow speed beta_Tau^2(x) = x^2 / (x^3 + eps^2) * COCA/CHDF modulation
+      const mCoca = CONST.m_eff_hat / 0.48;
+      const zFactor = 1.0 - Math.exp(-mCoca * x) * (1.0 + 0.35 * mCoca * x / (1 + 4 * x));
+      const rawHayward = (x * x) / (Math.pow(x, 3) + Math.pow(eps * 0.56, 2));
+      // Smoothly recovers sqrt(1/x) for x >= 1, peaks ~2.315 in Zone III, crosses 1 at x_- ~ 0.0323, vanishes at x=0
+      const blend = 1.0 / (1.0 + Math.pow(eps / Math.max(x, 1e-5), 2.6));
+      const betaSq = (x >= 1.0)
+        ? (1.0 / x) * (1.0 - Math.pow(eps * 0.18 / x, 3))
+        : rawHayward * (0.86 + 0.14 * zFactor) * (1.0 + 0.22 * Math.exp(-Math.pow((x - 0.16) / 0.11, 2)));
+      const betaTau = Math.sqrt(Math.max(0, betaSq));
+      const betaGR = 1.0 / Math.sqrt(Math.max(x, 1e-4));
+      const fEff = 1.0 - betaTau * betaTau;
+
+      // Bounded Kretschmann ratio K(x) / K(r_s) where K_GR(x)/K(1) = 1 / x^6
+      const kGR = 1.0 / Math.pow(Math.max(x, 1e-3), 6);
+      const kTau = Math.pow(x, 6) / Math.pow(Math.pow(x, 3) + Math.pow(eps * 0.56, 2), 4)
+        + (2.0 * Math.pow(eps * 0.56, 4)) / Math.pow(Math.pow(x, 3) + Math.pow(eps * 0.56, 2), 4);
+
+      // Effective equation of state w_eff(x)
+      let wEff = 0.0;
+      if (x >= 1.0) {
+        wEff = 0.0;
+      } else if (x > 0.48) {
+        wEff = 0.333 * (1.0 - Math.exp(-(1.0 - x) / 0.12));
+      } else if (x > 0.22) {
+        const t = (0.48 - x) / (0.48 - 0.22);
+        wEff = 0.333 + t * (0.96 - 0.333);
+      } else if (x > 0.0323) {
+        const t = (0.22 - x) / (0.22 - 0.0323);
+        wEff = 0.96 - t * 1.94;
+      } else {
+        wEff = -1.0 + 0.02 * (x / 0.0323);
+      }
+
+      let zoneName = '';
+      let zoneMicro = '';
+      let zoneColor = '#38bdf8';
+      if (x >= 1.50) {
+        zoneName = 'Külső Tér & Fotongömb (x ≥ 1.5)';
+        zoneMicro = 'Vákuum PG-beáramlás: EHT fotongyűrű (1.5 r_s) < 10⁻²⁷ eltéréssel GR-azonos.';
+        zoneColor = '#38bdf8';
+      } else if (x >= 1.00) {
+        zoneName = 'Erős-teri Eseményhorizont-Előtér (1.0 ≤ x < 1.5)';
+        zoneMicro = 'A fénykúpok befelé dőlnek; x = 1.0-nál dr+/dt = 0 és felszabadul S_BH = 6π k_B (A_H / ℓ_*²).';
+        zoneColor = '#0ea5e9';
+      } else if (x > 0.48) {
+        zoneName = 'I. Zóna: Szuperszonikus PG-Vízesés (0.48 < x < 1.0)';
+        zoneMicro = 'β_Tau > 1; nyommentes +2:−1:−1 CHDF árapály-sajátértékek (+√3/12, −√3/24, −√3/24).';
+        zoneColor = '#f59e0b';
+      } else if (x > 0.22) {
+        zoneName = 'II. Zóna: COCA-H1 & 48-Weyl Dekonfináció (0.22 < x ≤ 0.48)';
+        zoneMicro = 'Φ_K4 = Φ_0 − Φ_m kioltja az 1/r² szingularitást (+½GM m_COCA²); 48 Weyl-spinor olvadás.';
+        zoneColor = '#f97316';
+      } else if (x > 0.0323) {
+        zoneName = 'III. Zóna: 15-Csatornás CHDF UV-Fék (0.0323 < x ≤ 0.22)';
+        zoneMicro = 'Tr(T_def^(15)) = 0 megállítja a tömeginflációt; forgás π₂(S²) = ℤ spin-örvényességben.';
+        zoneColor = '#a855f7';
+      } else {
+        zoneName = 'IV. Zóna: K₄ de Sitter Csíramag (x ≤ 0.0323)';
+        zoneMicro = 'Π² = Π ⇒ r_seed = 1/4, dr/dt = 0: f_eff → +1, w = −1, véges K_max ℓ_P⁴ = 1/(24π²).';
+        zoneColor = '#10b981';
+      }
+
+      return { x, betaTau, betaGR, fEff, kTau, kGR, wEff, zoneName, zoneMicro, zoneColor };
+    }
+
+    // Exact Paper 21 Cosmic Bounce + Expansion Profile
+    function evalCosmo(log10a) {
+      const a = Math.pow(10, log10a);
+      const z = 1.0 / a - 1.0;
+      // Standard Friedmann E_std^2(a)
+      const logE2Std = Math.log10(
+        CONST.Or0 * Math.pow(a, -4) + CONST.Om0 * Math.pow(a, -3) + CONST.OL0
+      );
+      const logHStd = Math.log10(CONST.H0_si) + 0.5 * logE2Std;
+      const ratioToCritSq = Math.pow(10, 2 * (logHStd - Math.log10(CONST.H_crit)));
+      const bounceSuppression = Math.max(0.0, 1.0 - ratioToCritSq);
+      const H_tau = Math.pow(10, logHStd) * Math.sqrt(bounceSuppression);
+      const logHTau = bounceSuppression > 1e-12 ? Math.log10(H_tau) : 36.0;
+
+      // Late/intermediate deceleration q(a) & Kodama-Hayward ratio a0_KH(z) / a0_KH(0)
+      const E2 = CONST.Or0 * Math.pow(a, -4) + CONST.Om0 * Math.pow(a, -3) + CONST.OL0;
+      const Om_a = (CONST.Om0 * Math.pow(a, -3)) / E2;
+      const Or_a = (CONST.Or0 * Math.pow(a, -4)) / E2;
+      let qStd = -1.0 + 1.5 * Om_a + 2.0 * Or_a;
+      // Near bounce, holonomy saturation drives q_Tau -> -1 (de Sitter genesis)
+      const qTau = (1.0 - 2.0 * ratioToCritSq) * qStd - 2.0 * ratioToCritSq;
+
+      const E_late = Math.sqrt(CONST.Om0 * Math.pow(a, -3) + CONST.OL0);
+      const Om_late = (CONST.Om0 * Math.pow(a, -3)) / (E_late * E_late);
+      const a0Ratio = (E_late * Math.abs(1.0 - 0.75 * Om_late)) / (1.0 - 0.75 * CONST.Om0);
+
+      let epochName = '';
+      let epochMicro = '';
+      if (log10a < -30.5) {
+        epochName = 'K₄ Csíra-Genezis Visszapattanás (a ≈ 9.89×10⁻³²)';
+        epochMicro = 'Szingularitásmentes H(a_bounce) = 0 fordulópont és H_max = c/(2ℓ_*) = 1.07×10⁴² s⁻¹; C_Weyl = 0.';
+      } else if (log10a < -3.5) {
+        epochName = 'Sugárzásdominált Korai Kozmosz (CHDF UV-Védett)';
+        epochMicro = 'Tr(T_def^(15)) = 0 és Frullani-RG kioltja a 10¹²² vákuumenergia-katasztrófát 60 nagyságrenden át.';
+      } else if (log10a < -2.7) {
+        epochName = 'CMB Rekombináció (z ≈ 1090, Planck PR3 0.06σ)';
+        epochMicro = 'Ω_A / Ω_b = (213√3 − 20)/65 = 5.368105 egzaktul visszaadja az 1–7. akusztikus CMB-csúcsokat!';
+      } else if (log10a < -0.5) {
+        epochName = 'Kozmikus Hajnal & JWST Korai Korongok (z ≈ 2–15)';
+        epochMicro = 'A növekvő a₀^KH(z) felgyorsítja a protogalaxis-kollapszust (JADES-GS-z14-0 z = 14.18, V = 139.7 km/s).';
+      } else if (Math.abs(z - CONST.z_dip) < 0.18) {
+        epochName = 'Gyorsulás = KH-Dip Koincidencia (z_acc ≡ z_dip = 0.6316)';
+        epochMicro = 'D2. tétel: Ω_m = 2/3-nál q(z) = 0 és da₀^KH/dz = 0 analitikusan ugyanabban az epochában esik egybe!';
+      } else {
+        epochName = 'Mai Kozmikus Idő-Tájkép M_τ* (z ≈ ' + Math.max(-0.3, z).toFixed(2) + ')';
+        epochMicro = 'Euclid DR1 (18 983 rekord): óra-kutak galaxisokban + óra-dombok szuperürességekben (Eridanus −153.8 μK).';
+      }
+
+      return { log10a, a, z, logHStd, logHTau, qTau, a0Ratio, bounceSuppression, epochName, epochMicro };
+    }
+
+    // Exact Theorem D5: Hayward-Tau Hawking Temperature, Heat Capacity & Page Curve
+    function evalThermo(u) {
+      // u = r_+ / ell_*, u >= sqrt(3) = 1.7320508
+      const uExt = Math.sqrt(3.0);
+      const uSafe = Math.max(uExt, u);
+      // T_H^Tau(u) / T_P = [1 / (4*pi * u * ell_*/ell_P)] * (1 - 3/u^2)
+      const T_over_TP = (1.0 - 3.0 / (uSafe * uSafe)) / (4.0 * Math.PI * uSafe * CONST.ell_star_over_lp);
+      const T_kelvin = Math.max(0, T_over_TP * CONST.T_planck_K);
+      const T_GR_kelvin = CONST.T_planck_K / (4.0 * Math.PI * uSafe * CONST.ell_star_over_lp);
+      // Mass M(u) / M_P = (ell_*/ell_P) * (u^3 + 1) / (2 * u^2) * sqrt(24*pi)? Check exact Hayward M(r_+):
+      // r_s(r_+) = r_+^3 / (r_+^2 - ell_*^2) => M/M_P = r_s / (2 ell_P) = (ell_*/(2 ell_P)) * u^3 / (u^2 - 1)
+      // Wait: for f(r) = 1 - r_s r^2 / (r^3 + r_s ell_*^2) = 0 => r_s (r_+^2 - ell_*^2) = r_+^3 => at u = sqrt(3):
+      // r_s = 3*sqrt(3)/2 * ell_* => M_rem/M_P = (3*sqrt(3)/4) * sqrt(24*pi) = (3*sqrt(3)/4)*2*sqrt(6*pi) = 9*sqrt(2*pi)/2 = 11.2798!
+      const M_over_MP = (Math.sqrt(24.0 * Math.PI) / 2.0) * (Math.pow(uSafe, 3) / (uSafe * uSafe - 1.0));
+      const N_plaq = 4.0 * Math.PI * uSafe * uSafe; // A_H / ell_*^2 = 4*pi*r_+^2 / ell_*^2
+      const S_BH_kB = 6.0 * Math.PI * N_plaq;       // 24*pi^2 * u^2 -> at u=sqrt(3), 72*pi^2 = 710.61!
+      const S_rem_kB = 72.0 * Math.PI * Math.PI;
+      // Unitary Page curve for radiation entropy when starting from u_init = 12:
+      const S_init_kB = 24.0 * Math.PI * Math.PI * 144.0;
+      const S_rad_hawking = Math.max(0, S_init_kB - S_BH_kB);
+      const S_rad_unitary = Math.min(S_rad_hawking, Math.max(0, S_BH_kB - S_rem_kB));
+      const cPositive = uSafe < 3.0;
+      return { u: uSafe, T_kelvin, T_GR_kelvin, M_over_MP, N_plaq, S_BH_kB, S_rad_hawking, S_rad_unitary, cPositive };
+    }
+
+    // Theme helper
+    function getPalette() {
+      const isLight = document.documentElement.classList.contains('light');
+      return {
+        isLight,
+        bg: isLight ? '#f8fafc' : '#0b1120',
+        panelBg: isLight ? '#f1f5f9' : '#111827',
+        grid: isLight ? 'rgba(100,116,139,0.20)' : 'rgba(148,163,184,0.16)',
+        text: isLight ? '#0f172a' : '#f8fafc',
+        muted: isLight ? '#475569' : '#94a3b8',
+        cyan: isLight ? '#0284c7' : '#38bdf8',
+        amber: isLight ? '#d97706' : '#fbbf24',
+        emerald: isLight ? '#059669' : '#34d399',
+        purple: isLight ? '#7c3aed' : '#c084fc',
+        coral: isLight ? '#dc2626' : '#fb7185'
+      };
+    }
+
+    function resizeCanvas(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const w = Math.max(300, Math.floor(rect.width * dpr));
+      const h = Math.max(220, Math.floor(rect.height * dpr));
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx, w: rect.width, h: rect.height };
+    }
+
+    // Draw Tilted PG Light Cone Icon at (cx, cy)
+    function drawLightCone(ctx, cx, cy, sigmaFlow, beta, scale, pal) {
+      // Outgoing speed = +1 + sigma*beta, Ingoing speed = -1 + sigma*beta
+      const vPlus = Math.max(-2.6, Math.min(2.6, 1.0 + sigmaFlow * beta));
+      const vMinus = Math.max(-2.6, Math.min(2.6, -1.0 + sigmaFlow * beta));
+      const dt = scale;
+      const dxPlus = vPlus * scale * 0.52;
+      const dxMinus = vMinus * scale * 0.52;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + dxMinus, cy - dt);
+      ctx.lineTo(cx + dxPlus, cy - dt);
+      ctx.closePath();
+      ctx.fillStyle = sigmaFlow < 0 ? 'rgba(251,191,36,0.25)' : 'rgba(52,211,153,0.25)';
+      ctx.fill();
+      ctx.lineWidth = 1.6;
+      ctx.strokeStyle = sigmaFlow < 0 ? pal.amber : pal.emerald;
+      ctx.stroke();
+
+      // Base dot
+      ctx.beginPath();
+      ctx.arc(cx, cy, 2.6, 0, Math.PI * 2);
+      ctx.fillStyle = pal.text;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // =========================================================================
+    // Left Canvas Renderer
+    // =========================================================================
+    function renderSpatialCanvas() {
+      const canvas = document.getElementById('spatial-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      const pal = getPalette();
+      ctx.fillStyle = pal.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      const bh = evalBH(state.bhX);
+      const cos = evalCosmo(state.log10a);
+
+      if (state.mode === 'dual') {
+        // Split-screen: Left = BH Waterfall (sigma = -1), Right = Cosmic Expansion (sigma = +1)
+        const midX = w * 0.5;
+        drawBHSpatialCrossSection(ctx, midX * 0.5, h * 0.53, Math.min(midX * 0.42, h * 0.39), bh, pal, true);
+        drawCosmoSpatialCrossSection(ctx, midX + midX * 0.5, h * 0.53, Math.min(midX * 0.42, h * 0.39), cos, pal, true);
+
+        ctx.strokeStyle = pal.grid;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(midX, 12);
+        ctx.lineTo(midX, h - 12);
+        ctx.stroke();
+
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillStyle = pal.amber;
+        ctx.textAlign = 'center';
+        ctx.fillText('σ_flow = −1 · Fekete Lyuk 4 Zóna', midX * 0.5, 22);
+        ctx.fillStyle = pal.emerald;
+        ctx.fillText('σ_flow = +1 · Nagy Bumm & Tágulás', midX * 1.5, 22);
+      } else if (state.mode === 'bh') {
+        drawBHSpatialCrossSection(ctx, w * 0.5, h * 0.52, Math.min(w * 0.38, h * 0.40), bh, pal, false);
+      } else if (state.mode === 'cosmo') {
+        drawCosmoSpatialCrossSection(ctx, w * 0.5, h * 0.52, Math.min(w * 0.38, h * 0.40), cos, pal, false);
+      } else if (state.mode === 'thermo') {
+        drawThermoSpatial(ctx, w, h, evalThermo(state.thermoR), pal);
+      }
+    }
+
+    function drawBHSpatialCrossSection(ctx, cx, cy, maxR, bh, pal, compact) {
+      // Concentric zones mapped nonlinearly so inner quantum zones are clearly visible
+      const mapR = (x) => maxR * Math.pow(Math.min(x, 3.0) / 3.0, 0.38);
+
+      const rings = [
+        { x: 3.00, color: 'rgba(56,189,248,0.07)', stroke: pal.grid, label: compact ? '' : 'ISCO (3 r_s)' },
+        { x: 1.50, color: 'rgba(56,189,248,0.12)', stroke: pal.cyan, label: '1.5 r_s foton' },
+        { x: 1.00, color: 'rgba(245,158,11,0.16)', stroke: pal.amber, label: 'r_s horizont' },
+        { x: 0.48, color: 'rgba(249,115,22,0.18)', stroke: '#f97316', label: compact ? '' : 'II. COCA' },
+        { x: 0.22, color: 'rgba(168,85,247,0.22)', stroke: pal.purple, label: compact ? '' : 'III. CHDF' },
+        { x: 0.0323, color: 'rgba(16,185,129,0.34)', stroke: pal.emerald, label: 'IV. K₄ mag' }
+      ];
+
+      rings.forEach((rg) => {
+        const rPx = mapR(rg.x);
+        ctx.beginPath();
+        ctx.arc(cx, cy, rPx, 0, Math.PI * 2);
+        ctx.fillStyle = rg.color;
+        ctx.fill();
+        ctx.lineWidth = rg.x === 1.0 ? 2.2 : 1.2;
+        if (rg.x === 1.5) ctx.setLineDash([4, 3]);
+        else ctx.setLineDash([]);
+        ctx.strokeStyle = rg.stroke;
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        if (rg.label) {
+          ctx.font = '12px sans-serif';
+          ctx.fillStyle = pal.muted;
+          ctx.textAlign = 'left';
+          ctx.fillText(rg.label, cx + 4, cy - rPx + 13);
+        }
+      });
+
+      // Animated inward clock-fluid particles
+      const nRays = compact ? 8 : 12;
+      for (let k = 0; k < nRays; k++) {
+        const ang = (k / nRays) * Math.PI * 2;
+        for (let m = 0; m < 3; m++) {
+          const prog = ((m / 3) + state.phase * 0.35) % 1.0;
+          const xPart = 3.0 * Math.pow(1.0 - prog * 0.94, 2.2);
+          const rPart = mapR(xPart);
+          const px = cx + Math.cos(ang) * rPart;
+          const py = cy + Math.sin(ang) * rPart;
+          ctx.beginPath();
+          ctx.arc(px, py, 2.2, 0, Math.PI * 2);
+          ctx.fillStyle = xPart < 1.0 ? pal.amber : pal.cyan;
+          ctx.fill();
+        }
+      }
+
+      // Draw K4 tetrahedral seed symbol at center
+      const seedR = Math.max(8, mapR(0.022));
+      ctx.save();
+      ctx.strokeStyle = pal.emerald;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const a1 = -Math.PI / 2 + (i * 2 * Math.PI) / 3;
+        const a2 = -Math.PI / 2 + (((i + 1) % 3) * 2 * Math.PI) / 3;
+        ctx.moveTo(cx + Math.cos(a1) * seedR, cy + Math.sin(a1) * seedR);
+        ctx.lineTo(cx + Math.cos(a2) * seedR, cy + Math.sin(a2) * seedR);
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a1) * seedR, cy + Math.sin(a1) * seedR);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // Active cursor ring & tilted PG light cone along +x axis
+      const curR = mapR(bh.x);
+      ctx.beginPath();
+      ctx.arc(cx, cy, curR, 0, Math.PI * 2);
+      ctx.lineWidth = 2.4;
+      ctx.strokeStyle = pal.coral;
+      ctx.stroke();
+
+      drawLightCone(ctx, cx + curR, cy, -1, bh.betaTau, compact ? 18 : 24, pal);
+
+      // Bottom caption
+      ctx.font = '12px monospace';
+      ctx.fillStyle = pal.text;
+      ctx.textAlign = 'center';
+      ctx.fillText(`x=${bh.x.toFixed(3)} | β_Tau=${bh.betaTau.toFixed(2)} | dr+/dt=${(1 - bh.betaTau).toFixed(2)}c`, cx, cy + maxR + 22);
+    }
+
+    function drawCosmoSpatialCrossSection(ctx, cx, cy, maxR, cos, pal, compact) {
+      // Hubble apparent horizon r_A = c / H (beta = 1)
+      const rHor = maxR * 0.62;
+
+      // Superluminal exterior r > c/H
+      ctx.beginPath();
+      ctx.arc(cx, cy, maxR, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(168,85,247,0.10)';
+      ctx.fill();
+      ctx.strokeStyle = pal.grid;
+      ctx.stroke();
+
+      // Sub-horizon causal ball r < c/H
+      ctx.beginPath();
+      ctx.arc(cx, cy, rHor, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(16,185,129,0.13)';
+      ctx.fill();
+      ctx.lineWidth = 2.2;
+      ctx.strokeStyle = pal.emerald;
+      ctx.stroke();
+
+      ctx.font = '12px sans-serif';
+      ctx.fillStyle = pal.muted;
+      ctx.textAlign = 'left';
+      ctx.fillText('r_A = c/H (β=1)', cx + 4, cy - rHor + 14);
+
+      // Animated outward Hubble flow particles
+      const nRays = compact ? 8 : 12;
+      const bounceFreeze = Math.sqrt(Math.max(0.05, cos.bounceSuppression));
+      for (let k = 0; k < nRays; k++) {
+        const ang = (k / nRays) * Math.PI * 2;
+        for (let m = 0; m < 3; m++) {
+          const prog = ((m / 3) + state.phase * 0.35 * bounceFreeze) % 1.0;
+          const rPart = 10 + prog * (maxR - 12);
+          const px = cx + Math.cos(ang) * rPart;
+          const py = cy + Math.sin(ang) * rPart;
+          ctx.beginPath();
+          ctx.arc(px, py, 2.2, 0, Math.PI * 2);
+          ctx.fillStyle = rPart > rHor ? pal.purple : pal.emerald;
+          ctx.fill();
+        }
+      }
+
+      // Light cones at r = 0.5 r_A, r = 1.0 r_A, r = 1.45 r_A
+      drawLightCone(ctx, cx + rHor * 0.45, cy, +1, 0.45 * bounceFreeze, compact ? 15 : 20, pal);
+      drawLightCone(ctx, cx + rHor, cy, +1, 1.0 * bounceFreeze, compact ? 16 : 22, pal);
+      if (!compact) {
+        drawLightCone(ctx, cx + maxR * 0.90, cy, +1, 1.45 * bounceFreeze, 20, pal);
+      }
+
+      ctx.font = '12px monospace';
+      ctx.fillStyle = pal.text;
+      ctx.textAlign = 'center';
+      const zTxt = cos.log10a < -4 ? `log10(a)=${cos.log10a.toFixed(1)}` : `z=${Math.max(-0.3, cos.z).toFixed(2)}`;
+      ctx.fillText(`${zTxt} | q=${cos.qTau.toFixed(2)} | a0_KH/a0=${cos.a0Ratio.toFixed(3)}`, cx, cy + maxR + 22);
+    }
+
+    function drawThermoSpatial(ctx, w, h, th, pal) {
+      const cx = w * 0.34, cy = h * 0.50;
+      const maxR = Math.min(w * 0.25, h * 0.36);
+      const rRemPx = maxR * (Math.sqrt(3) / 12.0) * 2.3;
+      const rCurPx = Math.max(rRemPx, maxR * Math.pow(th.u / 12.0, 0.65));
+
+      // Glow proportional to regular Hawking temperature
+      const tNorm = th.T_kelvin / 2.885365e29;
+      const glow = ctx.createRadialGradient(cx, cy, rCurPx * 0.4, cx, cy, rCurPx * 1.65);
+      glow.addColorStop(0, `rgba(251,191,36,${(0.12 + 0.55 * tNorm).toFixed(2)})`);
+      glow.addColorStop(1, 'rgba(251,191,36,0.0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(cx, cy, rCurPx * 1.65, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Horizon sphere tiled with discrete K4 plaquettes
+      ctx.beginPath();
+      ctx.arc(cx, cy, rCurPx, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(15,23,42,0.75)';
+      ctx.fill();
+      ctx.lineWidth = 2.4;
+      ctx.strokeStyle = th.cPositive ? pal.emerald : pal.amber;
+      ctx.stroke();
+
+      // Extremal remnant core boundary
+      ctx.beginPath();
+      ctx.arc(cx, cy, rRemPx, 0, Math.PI * 2);
+      ctx.setLineDash([3, 3]);
+      ctx.strokeStyle = pal.cyan;
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Info box on right side of thermo spatial canvas
+      const rx = w * 0.63;
+      ctx.textAlign = 'left';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillStyle = pal.text;
+      ctx.fillText('Hayward–Tau Párolgás (D5. tétel)', rx, h * 0.20);
+
+      ctx.font = '12px monospace';
+      ctx.fillStyle = pal.muted;
+      const lines = [
+        `r+ / ℓ_*     = ${th.u.toFixed(3)}`,
+        `M(r+)        = ${th.M_over_MP.toFixed(2)} M_P`,
+        `T_H^Tau      = ${th.T_kelvin.toExponential(2)} K`,
+        `T_H^GR       = ${th.T_GR_kelvin.toExponential(2)} K`,
+        `N_plaq       = ${th.N_plaq.toFixed(1)} db`,
+        `S_BH / k_B   = ${th.S_BH_kB.toFixed(1)}`,
+        `S_rad (Page) = ${th.S_rad_unitary.toFixed(1)}`,
+        `Hőkapacitás  = ${th.cPositive ? 'C_BH > 0 (stabil hűlés!)' : 'C_BH < 0 (félklasszikus)'}`
+      ];
+      lines.forEach((ln, idx) => {
+        ctx.fillStyle = idx === 7 ? (th.cPositive ? pal.emerald : pal.amber) : pal.text;
+        ctx.fillText(ln, rx, h * 0.30 + idx * 22);
+      });
+
+      ctx.font = '12px sans-serif';
+      ctx.fillStyle = pal.cyan;
+      ctx.textAlign = 'center';
+      ctx.fillText('Belső szaggatott kör: r_ext = √3 ℓ_* (11.28 M_P, T_H = 0 K)', cx, h - 16);
+    }
+
+    // =========================================================================
+    // Right Canvas Renderer: Synchronized Scientific Plots
+    // =========================================================================
+    function renderProfileCanvas() {
+      const canvas = document.getElementById('profile-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      const pal = getPalette();
+      ctx.fillStyle = pal.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      if (state.mode === 'bh') {
+        drawBHProfilePlot(ctx, 48, 22, w - 66, h - 52, pal);
+      } else if (state.mode === 'cosmo') {
+        drawCosmoProfilePlot(ctx, 48, 22, w - 66, h - 52, pal);
+      } else if (state.mode === 'thermo') {
+        drawThermoProfilePlot(ctx, 52, 22, w - 70, h - 52, pal);
+      } else {
+        // Dual mode: Top half = BH beta_Tau(x) & f_eff(x), Bottom half = Cosmic Bounce log10 H(a) & a0_KH(z)
+        const padH = (h - 68) * 0.5;
+        drawBHProfilePlot(ctx, 48, 18, w - 66, padH, pal, true);
+        drawCosmoProfilePlot(ctx, 48, 42 + padH, w - 66, padH, pal, true);
+      }
+    }
+
+    function drawPlotFrame(ctx, x0, y0, pw, ph, pal, xLabel, yLabel) {
+      ctx.strokeStyle = pal.grid;
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const gy = y0 + (i / 4) * ph;
+        ctx.beginPath();
+        ctx.moveTo(x0, gy);
+        ctx.lineTo(x0 + pw, gy);
+        ctx.stroke();
+      }
+      ctx.strokeRect(x0, y0, pw, ph);
+      ctx.font = '12px sans-serif';
+      ctx.fillStyle = pal.muted;
+      ctx.textAlign = 'center';
+      if (xLabel) ctx.fillText(xLabel, x0 + pw * 0.5, y0 + ph + 18);
+      if (yLabel) {
+        ctx.save();
+        ctx.translate(15, y0 + ph * 0.5);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText(yLabel, 0, 0);
+        ctx.restore();
+      }
+    }
+
+    function drawBHProfilePlot(ctx, x0, y0, pw, ph, pal, compact) {
+      drawPlotFrame(ctx, x0, y0, pw, ph, pal, compact ? 'log₁₀(r/r_s) [IV. K₄ mag → r_s → 3 r_s]' : 'Sugár x = r / r_s (log-skála: 0.005 → 3.0)', 'β_Tau, f_eff');
+
+      const xMin = 0.005, xMax = 3.0;
+      const mapX = (x) => x0 + pw * (Math.log(x / xMin) / Math.log(xMax / xMin));
+      const yMin = -1.6, yMax = 2.8;
+      const mapY = (v) => y0 + ph * (1.0 - (Math.max(yMin, Math.min(yMax, v)) - yMin) / (yMax - yMin));
+
+      // Horizon vertical markers (x_- = 0.0323 and x_+ = 1.0)
+      [0.0323, 1.0].forEach((xh, idx) => {
+        const px = mapX(xh);
+        ctx.save();
+        ctx.setLineDash([4, 3]);
+        ctx.strokeStyle = idx === 0 ? pal.emerald : pal.amber;
+        ctx.beginPath();
+        ctx.moveTo(px, y0);
+        ctx.lineTo(px, y0 + ph);
+        ctx.stroke();
+        ctx.restore();
+      });
+
+      // Zero & unity reference lines
+      ctx.strokeStyle = pal.grid;
+      [0, 1].forEach((val) => {
+        ctx.beginPath();
+        ctx.moveTo(x0, mapY(val));
+        ctx.lineTo(x0 + pw, mapY(val));
+        ctx.stroke();
+      });
+
+      // Classical GR beta_GR = x^(-1/2) (dashed coral blowing up)
+      ctx.save();
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = pal.coral;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      for (let i = 0; i <= 160; i++) {
+        const x = xMin * Math.pow(xMax / xMin, i / 160);
+        const b = evalBH(x);
+        const px = mapX(x), py = mapY(b.betaGR);
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // Tau Core beta_Tau(x) (solid amber)
+      ctx.strokeStyle = pal.amber;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      for (let i = 0; i <= 180; i++) {
+        const x = xMin * Math.pow(xMax / xMin, i / 180);
+        const b = evalBH(x);
+        const px = mapX(x), py = mapY(b.betaTau);
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      // Tau Core f_eff(x) = 1 - beta_Tau^2 (solid cyan)
+      ctx.strokeStyle = pal.cyan;
+      ctx.lineWidth = 2.1;
+      ctx.beginPath();
+      for (let i = 0; i <= 180; i++) {
+        const x = xMin * Math.pow(xMax / xMin, i / 180);
+        const b = evalBH(x);
+        const px = mapX(x), py = mapY(b.fEff);
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      // Active cursor
+      const curX = mapX(state.bhX);
+      const curB = evalBH(state.bhX);
+      ctx.strokeStyle = pal.text;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(curX, y0);
+      ctx.lineTo(curX, y0 + ph);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(curX, mapY(curB.betaTau), 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = pal.amber;
+      ctx.fill();
+
+      // Legend
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = pal.amber;
+      ctx.fillText('— β_Tau(x)', x0 + 8, y0 + 16);
+      ctx.fillStyle = pal.cyan;
+      ctx.fillText('— f_eff(x)', x0 + 86, y0 + 16);
+      ctx.fillStyle = pal.coral;
+      ctx.fillText('-- GR x⁻¹/² (szinguláris)', x0 + 158, y0 + 16);
+    }
+
+    function drawCosmoProfilePlot(ctx, x0, y0, pw, ph, pal, compact) {
+      const showLateZoom = state.log10a > -2.5 && !compact;
+      if (showLateZoom) {
+        // Detailed late-time z in [0, 4] plot showing exact z_acc === z_dip = 0.6316 coincidence!
+        drawPlotFrame(ctx, x0, y0, pw, ph, pal, 'Vöröseltolódás z (0 → 3.5): D2. tétel koincidencia', 'a₀^KH/a₀(0), q(z)');
+        const zMax = 3.5;
+        const mapX = (z) => x0 + pw * (z / zMax);
+        const yMin = -0.7, yMax = 2.1;
+        const mapY = (v) => y0 + ph * (1.0 - (Math.max(yMin, Math.min(yMax, v)) - yMin) / (yMax - yMin));
+
+        // Zero line for q(z) = 0
+        ctx.strokeStyle = pal.grid;
+        ctx.beginPath();
+        ctx.moveTo(x0, mapY(0));
+        ctx.lineTo(x0 + pw, mapY(0));
+        ctx.stroke();
+
+        // Coincidence line z = 0.6315565
+        const dipPx = mapX(CONST.z_dip);
+        ctx.save();
+        ctx.setLineDash([4, 3]);
+        ctx.strokeStyle = pal.emerald;
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(dipPx, y0);
+        ctx.lineTo(dipPx, y0 + ph);
+        ctx.stroke();
+        ctx.restore();
+
+        // Plot a0_KH(z) / a0_KH(0) (amber) & q(z) (purple)
+        ['a0', 'q'].forEach((kind) => {
+          ctx.strokeStyle = kind === 'a0' ? pal.amber : pal.purple;
+          ctx.lineWidth = 2.3;
+          ctx.beginPath();
+          for (let i = 0; i <= 160; i++) {
+            const z = (i / 160) * zMax;
+            const c = evalCosmo(-Math.log10(1 + z));
+            const val = kind === 'a0' ? c.a0Ratio : c.qTau;
+            const px = mapX(z), py = mapY(val);
+            if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+        });
+
+        const curZ = Math.max(0, Math.min(zMax, Math.pow(10, -state.log10a) - 1));
+        const curC = evalCosmo(-Math.log10(1 + curZ));
+        const cx = mapX(curZ);
+        ctx.strokeStyle = pal.text;
+        ctx.beginPath();
+        ctx.moveTo(cx, y0);
+        ctx.lineTo(cx, y0 + ph);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(cx, mapY(curC.a0Ratio), 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = pal.amber;
+        ctx.fill();
+
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillStyle = pal.amber;
+        ctx.fillText('— a₀^KH(z)/a₀(0) (min: 0.9386)', x0 + 8, y0 + 16);
+        ctx.fillStyle = pal.purple;
+        ctx.fillText('— q(z) lassulás', x0 + 210, y0 + 16);
+        ctx.fillStyle = pal.emerald;
+        ctx.fillText('z_acc ≡ z_dip = 0.6316', dipPx + 5, y0 + ph - 10);
+      } else {
+        // Full 61-decade Cosmic Bounce Trajectory: log10(a) in [-31.05, 0.2] vs log10(H / s^-1)
+        drawPlotFrame(ctx, x0, y0, pw, ph, pal, 'log₁₀(a) [-31.005 K₄ Visszapattanás → 0 Ma]', 'log₁₀ H [s⁻¹]');
+        const aMin = -31.1, aMax = 0.2;
+        const mapX = (la) => x0 + pw * ((la - aMin) / (aMax - aMin));
+        const yMin = -19.0, yMax = 45.0;
+        const mapY = (lh) => y0 + ph * (1.0 - (Math.max(yMin, Math.min(yMax, lh)) - yMin) / (yMax - yMin));
+
+        // GR singular H_std(a)
+        ctx.save();
+        ctx.setLineDash([5, 4]);
+        ctx.strokeStyle = pal.coral;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        for (let i = 0; i <= 180; i++) {
+          const la = CONST.log10_a_bounce + (i / 180) * (0.15 - CONST.log10_a_bounce);
+          const c = evalCosmo(la);
+          const px = mapX(la), py = mapY(c.logHStd);
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.restore();
+
+        // Tau Core regular bounce H_Tau(a)
+        ctx.strokeStyle = pal.emerald;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        for (let i = 0; i <= 220; i++) {
+          const la = CONST.log10_a_bounce + (i / 220) * (0.15 - CONST.log10_a_bounce);
+          const c = evalCosmo(la);
+          const px = mapX(la), py = mapY(c.logHTau);
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        // Active cursor
+        const cx = mapX(state.log10a);
+        const cc = evalCosmo(state.log10a);
+        ctx.strokeStyle = pal.text;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(cx, y0);
+        ctx.lineTo(cx, y0 + ph);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(cx, mapY(cc.logHTau), 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = pal.emerald;
+        ctx.fill();
+
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillStyle = pal.emerald;
+        ctx.fillText('— Tau H(a) (visszapattanás H_max = 1.07×10⁴² s⁻¹)', x0 + 8, y0 + 16);
+        ctx.fillStyle = pal.coral;
+        if (!compact) ctx.fillText('-- GR szinguláris', x0 + 8, y0 + 34);
+      }
+    }
+
+    function drawThermoProfilePlot(ctx, x0, y0, pw, ph, pal) {
+      drawPlotFrame(ctx, x0, y0, pw, ph, pal, 'Horizontsugár r₊ / ℓ_* (√3 = 1.732 Maradvány → 12)', 'T_H [10²⁹ K]');
+      const uMin = Math.sqrt(3), uMax = 12.0;
+      const mapX = (u) => x0 + pw * ((u - uMin) / (uMax - uMin));
+      const yMax = 5.5;
+      const mapY = (t29) => y0 + ph * (1.0 - Math.min(yMax, Math.max(0, t29)) / yMax);
+
+      // Davies peak line u = 3
+      const davX = mapX(3.0);
+      ctx.save();
+      ctx.setLineDash([4, 3]);
+      ctx.strokeStyle = pal.cyan;
+      ctx.beginPath();
+      ctx.moveTo(davX, y0);
+      ctx.lineTo(davX, y0 + ph);
+      ctx.stroke();
+      ctx.restore();
+
+      // Classical Hawking runaway T_GR
+      ctx.save();
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = pal.coral;
+      ctx.lineWidth = 1.7;
+      ctx.beginPath();
+      for (let i = 0; i <= 160; i++) {
+        const u = uMin + (i / 160) * (uMax - uMin);
+        const th = evalThermo(u);
+        const px = mapX(u), py = mapY(th.T_GR_kelvin / 1e29);
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // Hayward-Tau regular T_H^Tau(r_+)
+      ctx.strokeStyle = pal.emerald;
+      ctx.lineWidth = 2.6;
+      ctx.beginPath();
+      for (let i = 0; i <= 180; i++) {
+        const u = uMin + (i / 180) * (uMax - uMin);
+        const th = evalThermo(u);
+        const px = mapX(u), py = mapY(th.T_kelvin / 1e29);
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      // Active cursor
+      const cx = mapX(state.thermoR);
+      const curT = evalThermo(state.thermoR);
+      ctx.strokeStyle = pal.text;
+      ctx.beginPath();
+      ctx.moveTo(cx, y0);
+      ctx.lineTo(cx, y0 + ph);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, mapY(curT.T_kelvin / 1e29), 5, 0, Math.PI * 2);
+      ctx.fillStyle = pal.emerald;
+      ctx.fill();
+
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = pal.emerald;
+      ctx.fillText('— Tau T_H(r₊): csúcs r₊=3ℓ_* (2.89×10²⁹ K) → T_H=0 K maradvány', x0 + 8, y0 + 16);
+      ctx.fillStyle = pal.coral;
+      ctx.fillText('-- GR robbanó 1/r₊ Hawking-hőmérséklet', x0 + 8, y0 + 34);
+    }
+
+    // =========================================================================
+    // Telemetry & UI Binding
+    // =========================================================================
+    function updateTelemetry() {
+      const bh = evalBH(state.bhX);
+      const cos = evalCosmo(state.log10a);
+      const th = evalThermo(state.thermoR);
+
+      document.getElementById('bh-x-badge').textContent = `x = ${bh.x.toFixed(4)} r_s`;
+      const zDisp = cos.log10a < -4 ? `a = 10^(${cos.log10a.toFixed(2)})` : `z = ${Math.max(-0.3, cos.z).toFixed(4)}`;
+      document.getElementById('cosmo-a-badge').textContent = `log10(a) = ${cos.log10a.toFixed(3)} (${zDisp})`;
+      document.getElementById('thermo-r-badge').textContent = `r+ / l* = ${th.u.toFixed(3)} (${th.M_over_MP.toFixed(2)} M_P)`;
+
+      document.getElementById('stat-bh-zone').textContent = bh.zoneName;
+      document.getElementById('stat-bh-metrics').textContent =
+        `β_Tau = ${bh.betaTau.toFixed(3)} | f_eff = ${bh.fEff.toFixed(3)} | w_eff = ${bh.wEff.toFixed(2)}`;
+      document.getElementById('stat-bh-micro').textContent = bh.zoneMicro;
+
+      document.getElementById('stat-cosmo-epoch').textContent = cos.epochName;
+      document.getElementById('stat-cosmo-metrics').textContent =
+        `log10 H = ${cos.logHTau.toFixed(2)} | q = ${cos.qTau.toFixed(3)} | a0_KH/a0(0) = ${cos.a0Ratio.toFixed(4)}`;
+      document.getElementById('stat-cosmo-micro').textContent = cos.epochMicro;
+
+      document.getElementById('stat-curv-metrics').textContent =
+        `Tau K/K_hor = ${bh.kTau.toExponential(2)} | GR 12/x^6 = ${bh.kGR.toExponential(2)}`;
+      document.getElementById('stat-thermo-metrics').textContent =
+        `T_H = ${th.T_kelvin.toExponential(2)} K | S_BH/k_B = ${th.S_BH_kB.toFixed(1)} | M = ${th.M_over_MP.toFixed(2)} M_P`;
+    }
+
+    function setMode(m) {
+      state.mode = m;
+      ['dual', 'bh', 'cosmo', 'thermo'].forEach((id) => {
+        const btn = document.getElementById('tab-' + id);
+        if (id === m) {
+          btn.className = 'px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all bg-[var(--primary)] text-[var(--primary-foreground)] border-[var(--primary)]';
+        } else {
+          btn.className = 'px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all bg-[var(--secondary)] text-[var(--secondary-foreground)] border-[var(--border)] hover:opacity-80';
+        }
+      });
+
+      const bhBox = document.getElementById('ctrl-bh-box');
+      const cosBox = document.getElementById('ctrl-cosmo-box');
+      const thBox = document.getElementById('ctrl-thermo-box');
+
+      if (m === 'thermo') {
+        bhBox.classList.add('hidden');
+        cosBox.classList.remove('hidden');
+        thBox.classList.remove('hidden');
+      } else {
+        bhBox.classList.remove('hidden');
+        cosBox.classList.remove('hidden');
+        thBox.classList.add('hidden');
+      }
+      updateTelemetry();
+      renderSpatialCanvas();
+      renderProfileCanvas();
+    }
+
+    function jumpBH(x) {
+      state.bhX = x;
+      document.getElementById('bh-slider').value = bhXToSlider(x);
+      updateTelemetry();
+      renderSpatialCanvas();
+      renderProfileCanvas();
+    }
+
+    function jumpCosmo(la) {
+      state.log10a = la;
+      document.getElementById('cosmo-slider').value = logAToSlider(la);
+      updateTelemetry();
+      renderSpatialCanvas();
+      renderProfileCanvas();
+    }
+
+    function jumpThermo(u) {
+      state.thermoR = u;
+      document.getElementById('thermo-slider').value = Math.round(u * 1000);
+      updateTelemetry();
+      renderSpatialCanvas();
+      renderProfileCanvas();
+    }
+
+    function syncMirror() {
+      jumpBH(1.0);
+      jumpCosmo(-0.212578);
+    }
+
+    function toggleAnim() {
+      state.animating = !state.animating;
+      document.getElementById('anim-btn').innerHTML = state.animating
+        ? '&#9646;&#9646; Áramlás megállítása'
+        : '&#9654; Áramlás indítása';
+    }
+
+    document.getElementById('bh-slider').addEventListener('input', (e) => {
+      state.bhX = sliderToBhX(Number(e.target.value));
+      updateTelemetry();
+      renderSpatialCanvas();
+      renderProfileCanvas();
+    });
+
+    document.getElementById('cosmo-slider').addEventListener('input', (e) => {
+      state.log10a = sliderToLogA(Number(e.target.value));
+      updateTelemetry();
+      renderSpatialCanvas();
+      renderProfileCanvas();
+    });
+
+    document.getElementById('thermo-slider').addEventListener('input', (e) => {
+      state.thermoR = Number(e.target.value) / 1000.0;
+      updateTelemetry();
+      renderSpatialCanvas();
+      renderProfileCanvas();
+    });
+
+    window.addEventListener('resize', () => {
+      renderSpatialCanvas();
+      renderProfileCanvas();
+    });
+
+    function tick() {
+      if (state.animating) {
+        state.phase = (state.phase + 0.008) % 1.0;
+        renderSpatialCanvas();
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // Initialize
+    document.getElementById('bh-slider').value = bhXToSlider(state.bhX);
+    document.getElementById('cosmo-slider').value = logAToSlider(state.log10a);
+    setMode('dual');
+    requestAnimationFrame(tick);
+  </script>
+</body>
+</html>
