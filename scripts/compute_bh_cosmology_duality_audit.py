@@ -28,9 +28,15 @@ from pathlib import Path
 import numpy as np
 import sympy as sp
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-DERIVED_DIR = REPO_ROOT / "data" / "derived"
-DERIVED_DIR.mkdir(parents=True, exist_ok=True)
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+if (REPO_ROOT / "data" / "raw" / "euclid_dr1_live_validation_results.json").exists():
+    RAW_DIR = REPO_ROOT / "data" / "raw"
+    DERIVED_DIR = REPO_ROOT / "data" / "derived"
+    DERIVED_DIR.mkdir(parents=True, exist_ok=True)
+else:
+    RAW_DIR = REPO_ROOT / "data"
+    DERIVED_DIR = SCRIPT_DIR
 
 # =============================================================================
 # 1. PHYSICAL & FROZEN TAU CORE (v20, k = 0) CONSTANTS
@@ -602,7 +608,7 @@ def main() -> None:
     cos_rows, cos_summary = build_cosmic_expansion_history()
 
     # Load vendored Paper 20 live Euclid DR1 & Frontier Three-Pillar results for standalone clean-clone reproducibility
-    raw_dir = REPO_ROOT / "data" / "raw"
+    raw_dir = RAW_DIR
     p20_json_path = raw_dir / "euclid_dr1_live_validation_results.json"
     f3p_json_path = raw_dir / "frontier_three_pillars_results.json"
 

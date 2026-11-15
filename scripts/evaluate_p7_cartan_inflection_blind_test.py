@@ -44,15 +44,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sympy as sp
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-RAW_DIR = REPO_ROOT / "data" / "raw"
-DERIVED_DIR = REPO_ROOT / "data" / "derived"
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+if (REPO_ROOT / "data" / "raw" / "data_CC.dat").exists():
+    RAW_DIR = REPO_ROOT / "data" / "raw"
+    DERIVED_DIR = REPO_ROOT / "data" / "derived"
+    DERIVED_DIR.mkdir(parents=True, exist_ok=True)
+else:
+    RAW_DIR = REPO_ROOT / "data"
+    DERIVED_DIR = SCRIPT_DIR
 FIG_DIR = REPO_ROOT / "figures"
 EN_FIG_DIR = REPO_ROOT / "paper21_submission_source" / "figures"
 HU_FIG_DIR = REPO_ROOT / "paper21_hungarian_source" / "figures"
 ARTIFACT_DIR = Path("/Users/jolcsak/.gemini/antigravity/brain/a427c21d-9cd4-494e-9b77-f0a1253ad296")
-
-DERIVED_DIR.mkdir(parents=True, exist_ok=True)
 FIG_DIR.mkdir(parents=True, exist_ok=True)
 EN_FIG_DIR.mkdir(parents=True, exist_ok=True)
 HU_FIG_DIR.mkdir(parents=True, exist_ok=True)
