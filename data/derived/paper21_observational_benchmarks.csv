@@ -1,0 +1,9 @@
+domain,probe,scale_or_z,tau_prediction_k0,observed_benchmark,verdict
+Strong-Field BH Shadow,EHT Sgr A* (4.154e6 M_sun),r = 1.5 r_s (z = 0),52.11 uas (|dR/R|_COCA < 1e-30),48.7 +- 7.0 uas,PASS (0.49 sigma)
+Strong-Field BH Shadow & Halo Core,EHT M87* (6.5e9 M_sun),r = 1.5 r_s & ell_tau = 3.10 kpc,39.69 uas; OCSR onset 3.10 kpc,42.0 +- 3.0 uas,PASS (0.77 sigma)
+GW Tensor Speed & Binary Pulsar,GW170817 + PSR J0737-3039A/B,Strong-field & 40 Mpc,c_T = c exact; dF_OD = 3.75e-17,|c_T/c - 1| < 1e-15; PPN < 1e-5,PASS (>1e11x margin)
+Early Universe Acoustic CMB,Planck 2018 PR3 plik_lite_v22 (613x613),z_* = 1090.33,Omega_A/Omega_b = 5.3681; chi2 = 584.24,5.364 +- 0.065; CAMB chi2 = 584.33,PASS (0.06 sigma parity)
+Dawn of Galaxies (Post-Bounce Growth),JWST JADES-GS-z14-0 & Early Collapse,z = 14.18 (t = 290 Myr),z_vir = 25.8 (124 Myr); V_KH = 139.7 km/s,z_obs = 14.18; V_obs ~ 168 km/s (LCDM z_vir = 6.9),PASS (early collapse explained)
+High-z Disk Kinematics (KH Trajectory),JWST + HST Mancera Pina+ (43 disks),z ~ 0.90,RMSE = 45.55 km/s (chi2 = 138.97),Static RAR chi2 = 194.08; LCDM SHMR 227.75,PASS (Delta chi2 = -88.78 vs LCDM)
+Cosmic Acceleration = KH Dip Coincidence,Cosmic Chronometers (15 bins) + Live Euclid DR1 (359 gal),0.07 <= z <= 3.49 (z_acc == z_dip = 0.6316),CC chi2/N = 0.38; Euclid boost 1.212x -> 1.408x,"q(z_acc)=0 at z=0.632; 18,983 Euclid DR1 records",PASS (exact analytic & live match)
+Present Void Acceleration (Apparent DE),Eridanus Supervoid / Planck Cold Spot + Euclid Voids,z = 0.15 - 0.80,"dT_Tau = -153.79 uK (chi2/N = 0.46); 2,859 Euclid void pts",Planck -146 +- 18 uK (linear LCDM ISW -24.15 uK),PASS (0.43 sigma)
