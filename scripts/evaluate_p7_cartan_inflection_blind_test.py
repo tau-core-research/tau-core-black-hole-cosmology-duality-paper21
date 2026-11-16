@@ -716,14 +716,14 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
         "font.size": 10,
         "axes.titlesize": 11,
         "axes.labelsize": 10,
-        "figure.facecolor": "#0b1021",
-        "axes.facecolor": "#121a33",
-        "axes.edgecolor": "#4a5a8a",
-        "axes.labelcolor": "#eef2ff",
-        "xtick.color": "#d0d8f0",
-        "ytick.color": "#d0d8f0",
-        "text.color": "#eef2ff",
-        "grid.color": "#2a365c",
+        "figure.facecolor": "#ffffff",
+        "axes.facecolor": "#ffffff",
+        "axes.edgecolor": "#334155",
+        "axes.labelcolor": "#0f172a",
+        "xtick.color": "#1e293b",
+        "ytick.color": "#1e293b",
+        "text.color": "#0f172a",
+        "grid.color": "#cbd5e1",
         "grid.alpha": 0.55,
     })
 
@@ -734,7 +734,7 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
             "32 Kozmikus Óra + 13 DESI BAO + 359 Élő Euclid DR1 NISP + 779 Euclid Lencse + 60 JWST/HST/ALMA + 135 KMOS$^{3\\mathrm{D}}$ Galaxis ($k = 0$)",
             fontsize=13.0,
             fontweight="bold",
-            color="#ffffff",
+            color="#0f172a",
             y=0.975,
         )
     else:
@@ -743,7 +743,7 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
             "32 Cosmic Chronometers + 13 DESI BAO + 359 Live Euclid DR1 NISP + 779 Euclid Lenses + 60 JWST/HST/ALMA + 135 KMOS$^{3\\mathrm{D}}$ ($k = 0$)",
             fontsize=13.0,
             fontweight="bold",
-            color="#ffffff",
+            color="#0f172a",
             y=0.975,
         )
 
@@ -754,7 +754,7 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
     ax1.plot(
         z_plot,
         adot_tau,
-        color="#00e5ff",
+        color="#0284c7",
         lw=2.6,
         label=(
             f"Tau Core ($k=0$, RECFAST): min $z_{{\\mathrm{{acc}}}} = {Z_ACC_TAU:.3f}$"
@@ -767,8 +767,8 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
         cc32[:, 1] / (1.0 + cc32[:, 0]),
         yerr=cc32[:, 2] / (1.0 + cc32[:, 0]),
         fmt="o",
-        color="#ffd166",
-        ecolor="#ffd166",
+        color="#d97706",
+        ecolor="#d97706",
         elinewidth=1.0,
         capsize=2.5,
         markersize=4.8,
@@ -792,8 +792,8 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
         h_desi / (1.0 + z_dh),
         yerr=herr_desi / (1.0 + z_dh),
         fmt="s",
-        color="#ff5d8f",
-        ecolor="#ff5d8f",
+        color="#dc2626",
+        ecolor="#dc2626",
         elinewidth=1.4,
         capsize=3.5,
         markersize=6.2,
@@ -805,7 +805,7 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
     )
     ax1.axvline(
         Z_ACC_TAU,
-        color="#00ff9d",
+        color="#059669",
         ls="--",
         lw=1.8,
         label=(
@@ -817,7 +817,7 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
     ax1.axvspan(
         z_acc_cc32_lo,
         z_acc_cc32_hi,
-        color="#00ff9d",
+        color="#059669",
         alpha=0.11,
         label=("CC-32 $1\\sigma$ mérési sáv" if hu else "CC-32 $1\\sigma$ confidence band"),
     )
@@ -832,7 +832,7 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
     ax1.set_xlim(0.0, 2.4)
     ax1.set_ylim(50.0, 96.0)
     ax1.grid(True)
-    ax1.legend(loc="upper right", fontsize=8.2, framealpha=0.85, facecolor="#0b1021")
+    ax1.legend(loc="upper right", fontsize=8.2, framealpha=0.85, facecolor="#f8fafc")
 
     # Panel B: Galactic Horizon Acceleration Trajectory a_0^KH(z)/a_0(0)
     ax2 = axes[0, 1]
@@ -843,7 +843,7 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
     ax2.plot(
         z_tr,
         a0_kin_tr,
-        color="#ff5d8f",
+        color="#dc2626",
         ls=":",
         lw=2.0,
         label=(
@@ -866,7 +866,7 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
     ax2.plot(
         z_tr,
         a0_kh_tr,
-        color="#00e5ff",
+        color="#0284c7",
         lw=2.8,
         label=(
             "Tau Core Cartan–Kodama $a_0^{\\mathrm{KH}}(z)/a_0(0)$ (min $z_{\\mathrm{dip}} = 0{,}631$)"
@@ -894,17 +894,17 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
     ax2.scatter(
         [Z_ACC_TAU],
         [0.93861],
-        color="#00ff9d",
+        color="#059669",
         s=95,
         marker="*",
         zorder=6,
         label=("Minimum: $z_{\\mathrm{dip}} = 0{,}631$ ($-6{,}14\\%$)" if hu else "Minimum: $z_{\\mathrm{dip}} = 0.631$ ($-6.14\\%$)"),
     )
-    ax2.axvline(Z_ACC_TAU, color="#00ff9d", ls="--", lw=1.8)
+    ax2.axvline(Z_ACC_TAU, color="#059669", ls="--", lw=1.8)
     ax2.axvspan(
         0.787,
         1.030,
-        color="#ffd166",
+        color="#d97706",
         alpha=0.16,
         label=(
             "43 JWST+HST korong (Mancera Piña+ 2025, $z=0{,}79\\text{–}1{,}03$)"
@@ -923,7 +923,7 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
     ax2.set_xlim(0.0, 2.6)
     ax2.set_ylim(0.88, 1.85)
     ax2.grid(True)
-    ax2.legend(loc="upper left", fontsize=7.9, framealpha=0.85, facecolor="#0b1021")
+    ax2.legend(loc="upper left", fontsize=7.9, framealpha=0.85, facecolor="#f8fafc")
 
     # Panel C: Direct Head-to-Head Chi^2 Scoreboard on 43 JWST+HST Disks
     ax3 = axes[1, 0]
@@ -950,9 +950,9 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
         227.747,
         pa["chi2_mp43_ocsr_kin"],
     ]
-    colors_bar = ["#00ff9d", "#00e5ff", "#ffd166", "#ff9f1c", "#ff5d8f"]
+    colors_bar = ["#059669", "#0284c7", "#d97706", "#ea580c", "#dc2626"]
     y_pos = np.arange(len(model_names))
-    bars = ax3.barh(y_pos, chi2_vals, color=colors_bar, height=0.58, edgecolor="#ffffff", linewidth=0.8)
+    bars = ax3.barh(y_pos, chi2_vals, color=colors_bar, height=0.58, edgecolor="#0f172a", linewidth=0.8)
     ax3.set_yticks(y_pos)
     ax3.set_yticklabels(model_names, fontsize=8.8)
     ax3.invert_yaxis()
@@ -984,7 +984,7 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
     ax4.plot(
         zdip_sub,
         chi2_sub,
-        color="#00e5ff",
+        color="#0284c7",
         lw=2.5,
         label=(
             "51 JWST/HST/ALMA galaxis $\\chi^2(z_{\\mathrm{dip}})$ profilja"
@@ -994,7 +994,7 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
     )
     ax4.axvline(
         Z_ACC_TAU,
-        color="#00ff9d",
+        color="#059669",
         ls="--",
         lw=2.2,
         label=(
@@ -1010,7 +1010,7 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
         [y_base + 14.0],
         xerr=[[z_acc_cc15 - z_acc_cc15_lo], [z_acc_cc15_hi - z_acc_cc15]],
         fmt="o",
-        color="#ffd166",
+        color="#d97706",
         markersize=7,
         lw=2.0,
         capsize=4,
@@ -1040,7 +1040,7 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
         [y_base],
         xerr=[[z_acc_desi - z_acc_desi_lo], [z_acc_desi_hi - z_acc_desi]],
         fmt="s",
-        color="#ff5d8f",
+        color="#dc2626",
         markersize=6.5,
         lw=2.0,
         capsize=4,
@@ -1064,7 +1064,7 @@ def render_p7_figure(suite_res: dict[str, Any], lang: str = "en") -> Path:
     ax4.set_ylabel("51 JWST+HST+ALMA korong $\\chi^2$ értéke" if hu else "51 JWST+HST+ALMA Disks $\\chi^2$")
     ax4.set_xlim(0.20, 0.95)
     ax4.grid(True)
-    ax4.legend(loc="upper left", fontsize=8.0, framealpha=0.85, facecolor="#0b1021")
+    ax4.legend(loc="upper left", fontsize=8.0, framealpha=0.85, facecolor="#f8fafc")
 
     plt.tight_layout(rect=[0.0, 0.0, 1.0, 0.94])
     fname = "fig8_p7_cartan_inflection_coincidence_and_blind_test.png"
