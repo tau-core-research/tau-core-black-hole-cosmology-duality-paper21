@@ -5,6 +5,7 @@ authors:
   - family-names: "Jolcsak"
     given-names: "A."
     affiliation: "Tau Core Research Collaboration"
+    orcid: "https://orcid.org/0009-0003-7311-6522"
 date-released: 2026-11-14
 version: "1.0.0"
 repository-code: "https://github.com/tau-core-research/tau-core-black-hole-cosmology-duality-paper21"
